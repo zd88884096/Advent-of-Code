@@ -41,10 +41,12 @@ public class Solution {
 
     //template
     static long MOD = 1000000007L;
-    public static void print(long[] aa){
-        for(int i = 0; i < aa.length; ++i)
-            System.out.print(aa[i] + "\t");
-        System.out.println();
+    public static int[] list_to_arr(List<Integer> l){
+        int[] arr = new int[l.size()];
+        for(int i = 0; i < l.size(); ++i){
+            arr[i] = l.get(i);
+        }
+        return arr;
     }
     public static void print(int[] aa){
         for(int i = 0; i < aa.length; ++i)
@@ -55,23 +57,6 @@ public class Solution {
         for(int i = 0; i < aa.length; ++i){
             for(int j = 0; j < aa[0].length; ++j){
                 System.out.print(aa[i][j] + "\t");
-            }
-            System.out.println();
-        }
-        System.out.println();
-    }
-    public static void print(int[][][] aa){
-        for(int i = 0; i < aa.length; ++i){
-            for(int j = 0; j < aa[0].length; ++j){
-                System.out.print(aa[i][j][0] + "\t");
-            }
-            System.out.println();
-        }
-        System.out.println();
-
-        for(int i = 0; i < aa.length; ++i){
-            for(int j = 0; j < aa[0].length; ++j){
-                System.out.print(aa[i][j][1] + "\t");
             }
             System.out.println();
         }
