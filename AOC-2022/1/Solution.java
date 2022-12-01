@@ -11,10 +11,10 @@ public class Solution {
 
             //record values for each elf
             List<Integer> l = new ArrayList<>();
-
             //ct = current elf? value
             int ct = 0;
             while(sc.hasNextLine()){
+                //read a line
                 String S = read();
                 if(S.length() == 0){
                     l.add(ct);
@@ -27,7 +27,6 @@ public class Solution {
             }
             //deal with the last elf
             l.add(ct);
-
             //sort decreasingly
             Collections.sort(l, (a, b) -> b - a);
 
