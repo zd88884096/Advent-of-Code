@@ -3,6 +3,44 @@ import java.io.*;
 import java.lang.Math;
 
 public class Solution {
+    public static Scanner sc;
+    public static void main(String[] args){
+        try{
+            File myObj = new File("input.txt");
+            sc = new Scanner(myObj);
+
+            //record values for each elf
+            List<Integer> l = new ArrayList<>();
+
+            //ct = current elf? value
+            int ct = 0;
+            while(sc.hasNextLine()){
+                String S = read();
+                if(S.length() == 0){
+                    l.add(ct);
+                    //reset ct for the next elf
+                    ct = 0;
+                }
+                else{
+                    ct += Integer.parseInt(S);
+                }
+            }
+            //deal with the last elf
+            l.add(ct);
+
+            //sort decreasingly
+            Collections.sort(l, (a, b) -> b - a);
+
+            System.out.println("Task 1: " + l.get(0));
+            //very emmmmm....
+            System.out.println("Task 2: " + (l.get(0) + l.get(1) + l.get(2)));
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("An error occurred.");        
+        }
+    }
+
+    //template
     static long MOD = 1000000007L;
     public static void print(long[] aa){
         for(int i = 0; i < aa.length; ++i)
@@ -92,38 +130,10 @@ public class Solution {
             }
         }
     }
-    public static Scanner sc;
     public static String read(){
         return sc.nextLine();
     }
     public static String[] read_toks(){
         return sc.nextLine().split(" ");
-    }
-    public static void main(String[] args){
-        try{
-            File myObj = new File("input.txt");
-            sc = new Scanner(myObj);
-
-            List<Integer> l = new ArrayList<>();
-            int max = 0, ct = 0;
-            while(sc.hasNextLine()){
-                String S = read();
-                if(S.length() == 0){
-                    max = Math.max(max, ct);
-                    l.add(ct);
-                    ct = 0;
-                }
-                else{
-                    ct += Integer.parseInt(S);
-                }
-            }
-            l.add(ct);
-            max = Math.max(max, ct);
-            Collections.sort(l);
-            System.out.println((l.get(l.size() - 1) + l.get(l.size() - 2) + l.get(l.size() - 3)));
-        }
-        catch (FileNotFoundException e) {
-            System.out.println("An error occurred.");        
-        }
     }
 }
