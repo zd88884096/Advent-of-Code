@@ -4,17 +4,18 @@ import java.lang.Math;
 
 public class Solution {
     public static Scanner sc;
-    public static void main(String[] args){
+    public static void sol1(){
         try{
+            //Solution 1: Sort List
+            //n = # of elfs, m = # of stuff for each elf
+            //Time Complexity: O(nmlog(n))
             File myObj = new File("input.txt");
             sc = new Scanner(myObj);
-
             //record values for each elf
             List<Integer> l = new ArrayList<>();
             //ct = current elf? value
             int ct = 0;
             while(sc.hasNextLine()){
-                //read a line
                 String S = read();
                 if(S.length() == 0){
                     l.add(ct);
@@ -29,14 +30,54 @@ public class Solution {
             l.add(ct);
             //sort decreasingly
             Collections.sort(l, (a, b) -> b - a);
-
+            System.out.println("Solution 1:");
             System.out.println("Task 1: " + l.get(0));
             //very emmmmm....
             System.out.println("Task 2: " + (l.get(0) + l.get(1) + l.get(2)));
+            System.out.println();
         }
         catch (FileNotFoundException e) {
             System.out.println("An error occurred.");        
         }
+    }
+    public static void sol2(){
+        try{
+            //Solution 2: PriorityQueue
+            //Time Complexity: O(nm)
+            sc = new Scanner(new File("input.txt"));
+            PriorityQueue<Integer> pq = new PriorityQueue<>();
+            int ct = 0;
+            while(sc.hasNextLine()){
+                String S = read();
+                if(S.length() == 0){
+                    pq.add(ct);
+                    //limit pq's size to <= 3, add / poll takes O(log(3)) = O(1)
+                    //the removed element is the smallest in pq, which would
+                    //  never make top 3 anyway
+                    if(pq.size() > 3){
+                        pq.poll();
+                    }
+                    ct = 0;
+                }
+                else{
+                    ct += Integer.parseInt(S);
+                }
+            }
+            pq.add(ct);
+            pq.poll();
+            int a = pq.poll(), b = pq.poll(), c = pq.poll();
+            System.out.println("Solution 2:");
+            System.out.println("Task 1: " + c);
+            //very emmmmm....
+            System.out.println("Task 2: " + (a + b + c));
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("An error occurred.");        
+        }
+    }
+    public static void main(String[] args){
+        sol1();
+        sol2();
     }
 
     //template
