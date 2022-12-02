@@ -5,14 +5,14 @@ import java.lang.Math;
 public class Solution {
     public static void main(String[] args){
         String[] arr = read_all_String();
-        int score = arr.length, s2 = arr.length;
+        int s1 = arr.length, s2 = arr.length;
         for(int i = 0; i < arr.length; ++i){
             //very bad style
             int a = (int)(arr[i].charAt(0)) - 90, b = (int)(arr[i].charAt(2)) - 88;
-            score += b + ((b - a) % 3) * 3;
+            s1 += b + ((b - a) % 3) * 3;
             s2 += b * 3 + (b + a + 201) % 3;
         }
-        System.out.println("Task 1: " + score);
+        System.out.println("Task 1: " + s1);
         System.out.println("Task 2: " + s2);
     }
 
