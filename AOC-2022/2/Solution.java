@@ -8,9 +8,9 @@ public class Solution {
         int score = arr.length, s2 = arr.length;
         for(int i = 0; i < arr.length; ++i){
             //very bad style
-            int one = (int)(arr[i].charAt(0)) - 90, two = (int)(arr[i].charAt(2)) - 88;
-            score += two + ((two - one) % 3) * 3;
-            s2 += two * 3 + (two + one + 201) % 3;
+            int a = (int)(arr[i].charAt(0)) - 90, b = (int)(arr[i].charAt(2)) - 88;
+            score += b + ((b - a) % 3) * 3;
+            s2 += b * 3 + (b + a + 201) % 3;
         }
         System.out.println("Task 1: " + score);
         System.out.println("Task 2: " + s2);
