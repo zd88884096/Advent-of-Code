@@ -3,7 +3,6 @@ import java.io.*;
 import java.lang.Math;
 
 public class Solution {
-    public static Scanner sc;
     public static void main(String[] args){
         String[] arr = read_all_String();
         int score = arr.length, s2 = arr.length;
@@ -18,6 +17,7 @@ public class Solution {
     }
 
     //template
+    public static Scanner sc;
     static long MOD = 1000000007L;
 
     //read all input in the form of a List of String
