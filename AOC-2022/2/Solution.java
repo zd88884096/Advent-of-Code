@@ -6,9 +6,9 @@ public class Solution {
     public static void main(String[] args){
         String[] arr = read_all_String();
         int s1 = arr.length, s2 = arr.length;
-        for(int i = 0; i < arr.length; ++i){
+        for(String S : arr){
             //very bad style
-            int a = (int)(arr[i].charAt(0)) - 90, b = (int)(arr[i].charAt(2)) - 88;
+            int a = (int)(S.charAt(0)) - 90, b = (int)(S.charAt(2)) - 88;
             s1 += b + ((b - a) % 3) * 3;
             s2 += b * 3 + (b + a + 201) % 3;
         }
