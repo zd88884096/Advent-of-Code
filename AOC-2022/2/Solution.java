@@ -5,43 +5,55 @@ import java.lang.Math;
 public class Solution {
     public static Scanner sc;
     public static void main(String[] args){
+        String[] arr = read_all_String();
+        int score = arr.length, s2 = arr.length;
+        for(int i = 0; i < arr.length; ++i){
+            //very bad style
+            int one = (int)(arr[i].charAt(0)) - 90, two = (int)(arr[i].charAt(2)) - 88;
+            score += two + ((two - one) % 3) * 3;
+            s2 += two * 3 + (two + one + 201) % 3;
+        }
+        System.out.println("Task 1: " + score);
+        System.out.println("Task 2: " + s2);
+    }
+
+    //template
+    static long MOD = 1000000007L;
+
+    //read all input in the form of a List of String
+    public static List<String> read_input(){
         try{
             sc = new Scanner(new File("input.txt"));
         }
         catch (FileNotFoundException e) {
             System.out.println("An error occurred.");        
         }
-        PriorityQueue<Integer> pq = new PriorityQueue<>();
-        int ct = 0;
+        List<String> l = new ArrayList<>();
         while(sc.hasNextLine()){
             String S = read();
-            if(S.length() == 0){
-                pq.add(ct);
-                //limit pq's size to <= 3, add / poll takes O(log(3)) = O(1)
-                //the removed element is the smallest in pq, which would
-                //  never make top 3 anyway
-                if(pq.size() > 3){
-                    pq.poll();
-                }
-                ct = 0;
-            }
-            else{
-                ct += Integer.parseInt(S);
-            }
+            l.add(S);
         }
-        pq.add(ct);
-        pq.poll();
-        int a = pq.poll(), b = pq.poll(), c = pq.poll();
-        System.out.println("Solution 2:");
-        System.out.println("Task 1: " + c);
-        //very emmmmm....
-        System.out.println("Task 2: " + (a + b + c));
+        return l;
     }
-
-    //template
-    static long MOD = 1000000007L;
-    public static int[] list_to_arr(List<Integer> l){
+    public static char[][] read_all_char_arr(){
+        List<String> l = read_input();
+        char[][] arr = new char[l.size()][l.get(0).length()];
+        for(int i = 0; i < l.size(); ++i){
+            arr[i] = l.get(i).toCharArray();
+        }
+        return arr;
+    }
+    public static int[] read_all_int(){
+        List<String> l = read_input();
         int[] arr = new int[l.size()];
+        for(int i = 0; i < l.size(); ++i){
+            arr[i] = Integer.parseInt(l.get(i));
+        }
+        return arr;
+    }
+    public static String[] read_all_String(){
+        List<String> l = read_input();
+        String[] arr = new String[l.size()];
         for(int i = 0; i < l.size(); ++i){
             arr[i] = l.get(i);
         }
