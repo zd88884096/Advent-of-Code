@@ -72,22 +72,7 @@ public class Solution {
         }
     }
 
-    public static PriorityQueue<Long> pq;
-    public static Node root;
-    @SuppressWarnings("unchecked")
-    public static void main(String[] args){
-        //idea: Simulate like a Trie, each node is a directory
-        //  each node in the trie contains a HashMap of (directory_name, Node) (represent sub-directories),
-        //  a HashMap of (file_name, size),
-        //  in addition we have fields like parent directory and total size of the directory
-        //
-        //  Note we also need to keep track of the current directory we are in
-        //  when we execute the commands
-        String[] arr = read_all_String();
-        pq = new PriorityQueue<>();
-        //"cd .." at root still gives root
-        root = new Node(root);
-        Node cur = root;
+    public static void add_to_trie(String[] arr){
         int ind = 0;
         while(ind < arr.length){
             String[] toks = split(arr[ind], " ");
@@ -126,8 +111,30 @@ public class Solution {
         }
         //call such recursion on root would compute sizes for all node in the trie
         compute_size(root);
-        //compute_size(root);
+    }
+    public static PriorityQueue<Long> pq;
+    public static Node root, cur;
+    @SuppressWarnings("unchecked")
+    public static void main(String[] args){
+        //idea: Simulate like a Trie, each node is a directory
+        //  each node in the trie contains a HashMap of (directory_name, Node) (represent sub-directories),
+        //  a HashMap of (file_name, size),
+        //  in addition we have fields like parent directory and total size of the directory
+        //
+        //  Note we also need to keep track of the current directory we are in
+        //  when we execute the commands
+        String[] arr = read_all_String();
+        pq = new PriorityQueue<>();
+        //"cd .." at root still gives root
+        root = new Node(root);
+        cur = root;
+        
+        //equivalent to adding all commands to subarray, but do it
+        //  in two seperate times, supports adding even more commands
+        add_to_trie(subarray(arr, 0, 8));
+        add_to_trie(subarray(arr, 8, arr.length));
         System.out.println("Task 1: " + sum_size(root, 100000));
+
         add_size_to_pq(root);
         long lower_bound = 30000000L - (70000000L - root.size);
         while((!pq.isEmpty()) && pq.peek() < lower_bound){
@@ -166,7 +173,25 @@ public class Solution {
         }
         return set;
     }
-
+    @SuppressWarnings("unchecked")
+    public static <T> T[] subarray(T[] arr, int st, int end){
+        assert(end > st);
+        T[] res = (T[]) new Object[end - st];
+        for(int i = st; i < end; ++i){
+            res[i - st] = arr[i];
+        }
+        return res;
+    }
+    public static String[] subarray(String[] arr, int st, int end){
+        assert(end > st);
+        String[] res = new String[end - st];
+        for(int i = st; i < end; ++i){
+            String S = "";
+            S += arr[i];
+            res[i - st] = S;
+        }
+        return res;
+    }
     //split with multiple delimiters and clearing empty String
     public static String[] split(String S, String delim){
         String[] toks = S.split(delim);
