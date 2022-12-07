@@ -131,8 +131,10 @@ public class Solution {
         
         //equivalent to adding all commands to subarray, but do it
         //  in two seperate times, supports adding even more commands
-        add_to_trie(subarray(arr, 0, 8));
-        add_to_trie(subarray(arr, 8, arr.length));
+        //add_to_trie(subarray(arr, 0, 8));
+        //add_to_trie(subarray(arr, 8, arr.length));
+        
+        add_to_trie(arr);
         System.out.println("Task 1: " + sum_size(root, 100000));
 
         add_size_to_pq(root);
