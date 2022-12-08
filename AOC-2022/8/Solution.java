@@ -9,6 +9,7 @@ public class Solution {
         //idea: Part II, for each direction, we record the closest tree with each height
         //  and if we are considering scenic score of a tree with height 5, find the closest tree with height >= 5
         //  through this record
+        //for each direction, just rotate the matrix 90 degrees 4 times and apply the same function
 
         //Part I
         int[][] board = read_all_int_arr();
