@@ -10,7 +10,8 @@ public class Solution {
         //  and if we are considering scenic score of a tree with height 5, find the closest tree with height >= 5
         //  through this record
         //for each direction, just rotate the matrix 90 degrees 4 times and apply the same function
-
+        //Time Complexity: O(mn)
+        
         //Part I
         int[][] board = read_all_int_arr();
         int row = board.length, col = board[0].length;
