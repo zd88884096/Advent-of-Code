@@ -14,38 +14,24 @@ public class Solution {
         int[][] board = read_all_int_arr();
         int row = board.length, col = board[0].length;
         int[][] visible = new int[row][col];
-        for(int s = 0; s < 4; ++s){
-            for(int i = 0; i < board.length; ++i){
-                int max = -1;
-                for(int j = 0; j < board[0].length; ++j){
-                    if(board[i][j] > max){
-                        visible[i][j] = 1;
-                        max = board[i][j];
-                    }
-                }
-            }
-            visible = rotate_90(visible);
-            board = rotate_90(board);
-        }
-        int ct = 0;
-        for(int i = 0; i < row; ++i){
-            for(int j = 0; j < col; ++j){
-                ct += visible[i][j];
-            }
-        }
-        System.out.println("Task 1: " + ct);
 
-
-        //Part II
+        //score is for Part II
         int[][] score = new int[row][col];
         for(int i = 0; i < row; ++i){
             Arrays.fill(score[i], 1);
         }
+
         for(int s = 0; s < 4; ++s){
-            for(int i = 0; i < score.length; ++i){
+            for(int i = 0; i < board.length; ++i){
+                int max = -1;
                 int[] recent = new int[10];
-                Arrays.fill(recent, -1);
-                for(int j = 0; j < score[0].length; ++j){
+                for(int j = 0; j < board[0].length; ++j){
+                    //part I
+                    if(board[i][j] > max){
+                        visible[i][j] = 1;
+                        max = board[i][j];
+                    }
+                    //part II
                     int closest = 0;
                     for(int k = board[i][j]; k < 10; ++k){
                         closest = Math.max(closest, recent[k]);
@@ -54,15 +40,18 @@ public class Solution {
                     recent[board[i][j]] = j;
                 }
             }
-            score = rotate_90(score);
+            visible = rotate_90(visible);
             board = rotate_90(board);
+            score = rotate_90(score);
         }
-        int max = 0;
-        for(int i = 1; i < row - 1; ++i){
-            for(int j = 1; j < col - 1; ++j){
+        int ct = 0, max = 0;
+        for(int i = 0; i < row; ++i){
+            for(int j = 0; j < col; ++j){
+                ct += visible[i][j];
                 max = Math.max(max, score[i][j]);
             }
         }
+        System.out.println("Task 1: " + ct);
         System.out.println("Task 2: " + max);
     }
     
