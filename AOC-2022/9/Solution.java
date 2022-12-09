@@ -28,12 +28,13 @@ public class Solution {
                     long ih = ropes[k][0], jh = ropes[k][1], it = ropes[k + 1][0], jt = ropes[k + 1][1];
 
                     //move tail
+                    
                     if(Math.abs(ih - it) >= 2L){
                         it += (ih - it) / 2;
-                        jt += (jh - jt + (jh > jt ? 1 : -1)) / 2;
+                        jt += (jh - jt) - ((jh - jt) / 2);
                     }
                     else if(Math.abs(jh - jt) >= 2L){
-                        it += (ih - it + (ih > it ? 1 : -1)) / 2;
+                        it += (ih - it) - ((ih - it) / 2);
                         jt += (jh - jt) / 2;
                     }
                     ropes[k + 1][0] = it;
@@ -52,8 +53,9 @@ public class Solution {
     //template
     public static Scanner sc;
     static long MOD = 1000000007L;
-    //(x + dir_card[i], y + dir_card[i + 1]) are 4 cardinal directions
+    //(x + dir_card[i], y + dir_card[i + 1]) are 4 cardinal directions (for i in [0..3])
     public static int[] dir_card = {1, 0, -1, 0, 1};
+    //same thing, 8 directions, for i in [0..7]
     public static int[] dir_all = {1, 0, -1, 0, 1, -1, -1, 1, 1};
 
     public static int[][] rotate_90(int[][] arr){
