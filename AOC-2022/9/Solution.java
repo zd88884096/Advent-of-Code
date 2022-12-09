@@ -6,7 +6,7 @@ public class Solution {
     @SuppressWarnings("unchecked")
     public static void main(String[] args){
         //idea: simulate, with the i-th element moving as if (i-1)-th is its head
-        
+
         String[] dir = {"D", "L", "U", "R"};
         HashMap<String, Integer> dir_map = new HashMap<>();
         for(int s = 0; s < 4; ++s){
@@ -25,8 +25,9 @@ public class Solution {
                 ropes[0][0] += dir_card[s];
                 ropes[0][1] += dir_card[s + 1];
                 for(int k = 0; k < N - 1; ++k){
-                    long ih = ropes[k][0], jh = ropes[k][1];
-                    long it = ropes[k + 1][0], jt = ropes[k + 1][1];
+                    long ih = ropes[k][0], jh = ropes[k][1], it = ropes[k + 1][0], jt = ropes[k + 1][1];
+
+                    //move tail
                     if(Math.abs(ih - it) >= 2L){
                         it += (ih - it) / 2;
                         jt += (jh - jt + (jh > jt ? 1 : -1)) / 2;
@@ -37,12 +38,14 @@ public class Solution {
                     }
                     ropes[k + 1][0] = it;
                     ropes[k + 1][1] = jt;
+
+                    //track visited position of last tail
                     if(k == ropes.length - 2)
                         visited.add(it * mult + jt);
                 }
             }
         }
-        System.out.println(visited.size());
+        System.out.println("Task 2: " + visited.size());
     }
     
 
