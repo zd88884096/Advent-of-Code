@@ -22,9 +22,9 @@ public class Solution {
                 res[i] = new Stack<>();
             }
         }
-        for(Stack<Integer> stack : res){
+        /*for(Stack<Integer> stack : res){
             System.out.println(stack.size());
-        }
+        }*/
         return res;
     }
 
@@ -49,7 +49,8 @@ public class Solution {
             for(int j = 0; j < stack[i].size(); ++j){
                 sb.append(stack[i].get(j));
             }
-            sb.append(" ");
+            if(i != stack.length - 1)
+                sb.append(" ");
         }
         return sb.toString();
     }
@@ -90,10 +91,21 @@ public class Solution {
         return -1;
     }
 
+    public static boolean full(Stack<Integer> stack){
+        for(int ele : stack){
+            if(ele == 9){
+                return false;
+            }
+        }
+        return true;
+    }
     //return cost to remove
     public static int remove(Stack<Integer> stack){
         int ind = top_ind(stack);
         stack.set(ind, 9);
+        if(stack.size() == 1){
+            return 0;
+        }
         return stack.size() - ind;
     }
 
@@ -105,8 +117,20 @@ public class Solution {
             tot += cost[stack.get(i)];
         }
         stack.set(stack.size() - 1, type);
-        tot += cost[type];
+        if(stack.size() != 1){
+            //System.out.println(stack.size());
+            tot += cost[type];
+        }
         return tot;
+    }
+
+    public static boolean all(int type, Stack<Integer> stack){
+        for(int ele : stack){
+            if(ele != type && ele != 9){
+                return false;
+            }
+        }
+        return true;
     }
 
     public static boolean reachable(int src, int dest, Stack<Integer>[] stack){
@@ -116,33 +140,35 @@ public class Solution {
             dest = tmp;
         }
         for(int i = src + 1; i < dest; ++i){
-            if(i % 2 == 1 && top(stack[i]) != -1 && !empty(stack[i])){
+            if(i % 2 == 0 && full(stack[i])){
+                //System.out.println(src + " " + dest + " " + i);
                 return false;
             }
         }
         return true;
     }
-    public static void main(String[] args){
-        //peg_size: {2, 2, 1, 2, 1, 2, 1, 2, 2};
-        //hallway_ind (among pegs in peg_size): {0, 2, 4, 6, 8};
-        //room_ind: {1, 3, 5, 7};
-        HashSet<Integer> hallway = new HashSet<>(), room = new HashSet<>();
-        for(int i = 0; i < 9; ++i){
-            if(i % 2 == 0)
-                hallway.add(i);
-            else
-                room.add(i);
+
+    public static int dist(int src, int dest){
+        return Math.abs(entrance_coordinate[dest] - entrance_coordinate[src]);
+    }
+
+    public static void add_neighbor(int sr, int de, long od, Stack<Integer>[] stack){
+        Stack<Integer>[] s2 = copy(stack);
+        Stack<Integer> src = s2[sr], dest = s2[de];
+        int src_top = top(src);
+        long nd = od + add(src_top, dest) + (dist(sr, de) + remove(src)) * cost[src_top];
+        String ns = encode(s2);
+        if(!visited.containsKey(ns)){
+            pq.add(new Pair<>(ns, nd));
+            //System.out.println(visited.size() + " : " + ns + " " + nd);
         }
-        //starting vs. target
-        //Task 1
-        //int[] peg_size = {2, 2, 1, 2, 1, 2, 1, 2, 2};
-        //String st = " 1 1 1 1 1 1 1 1";
-        String st = "99 01 9 32 9 21 9 03 99";
-        String end = "99 00 9 11 9 22 9 33 99";
-        //Task 2
-        /*int[] peg_size = {2, 2, 1, 2, 1, 2, 1, 2, 2};
-        String st = " 01  32  21  03 ";
-        String end = " 00  11  22  33 ";*/
+    }
+    public static PriorityQueue<Pair<String, Long>> pq;
+    public static HashMap<String, Long> visited;
+    public static int[] entrance_coordinate = {0, 0, 1, 2, 3, 4, 5, 6, 6}, dest_index = {1, 3, 5, 7};
+    public static void main(String[] args){
+        //RUN-TIME: around 2.5s, logic optimized
+        //Further optimization possible by changing stack[] to char[] instead, likely 3-4 times faster
 
         //INTUITION OF THE PROBLEM:
         //recognize each state of the game as a vertex in a directed graph
@@ -155,29 +181,51 @@ public class Solution {
         //  (always takes energy to make a move), so we can use Dijkstra on the graph
         //Note we don't have to create the whole graph to run Dijkstra, just have
         //  to explore possible moves along the way
-        PriorityQueue<Pair<String, Long>> pq = new PriorityQueue<>((_f, _s) -> (_f.b - _s.b > 0 ? 1 : -1));
-        HashMap<String, Long> visited = new HashMap<>();
+        //starting vs. target
+        //Task 1
+        //9 is for empty slot, 0 - 3 for A - D
+        //Example: String st = "99 01 9 32 9 21 9 03 99";
+        //String st = "99 23 9 21 9 03 9 10 99";
+        //String end = "99 00 9 11 9 22 9 33 99";
+        //Task 2
+        //Example: String st = "99 0331 9 3122 9 2011 9 0203 99";
+        String st = "99 2333 9 2121 9 0013 9 1200 99";
+        String end = "99 0000 9 1111 9 2222 9 3333 99";
+
+        //dijkstra
+        pq = new PriorityQueue<>((_f, _s) -> (_f.b - _s.b > 0 ? 1 : -1));
+        visited = new HashMap<>();
         pq.add(new Pair<>(st, 0L));
         while(!pq.isEmpty()){
             Pair<String, Long> p = pq.poll();
+            if(visited.containsKey(p.a)){
+                continue;
+            }
             if(p.a.equals(end)){
                 System.out.println(p.b);
                 return ;
             }
             Stack<Integer>[] stack = decode(p.a);
-            visited.put(st, p.b);
-            for(int sr : room){
-                for(int de : hallway){
-                    if(reachable(src, dest, stack) && top_empty(stack[de]) != -1 && top(stack[sr]) != -1){
-                        Stack<Integer>[] s2 = copy(stack);
-                        Stack<Integer> src = s2[sr], dest = s2[de];
-                        int src_top = top(src), src_top_ind = top_ind(src);
-                        long nd = p.b + add(src_top, dest) + (dist(sr, de) + remove(src)) * cost[src_top];
-                        String ns = encode(s2);
-                        if(!visited.containsKey(ns)){
-                            pq.add(new Pair<>(ns, nd));
-                        }
+            visited.put(p.a, p.b);
+
+            for(int de = 0; de <= 8; de += 2){
+                if(top_empty(stack[de]) == -1){
+                    continue;
+                }
+                for(int sr = 1; sr <= 7; sr += 2){
+                    if(top(stack[sr]) != -1 && reachable(sr, de, stack)){
+                        add_neighbor(sr, de, p.b, stack);
                     }
+                }
+            }
+            for(int sr = 0; sr <= 8; sr += 2){
+                int type = top(stack[sr]);
+                if(type == -1){
+                    continue;
+                }
+                int de = 2 * type + 1;
+                if((all(type, stack[de])) && (reachable(sr, de, stack))){
+                    add_neighbor(sr, de, p.b, stack);
                 }
             }
         }
