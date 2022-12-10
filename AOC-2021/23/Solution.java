@@ -152,19 +152,19 @@ public class Solution {
         return Math.abs(entrance_coordinate[dest] - entrance_coordinate[src]);
     }
 
-    public static void add_neighbor(int sr, int de, long od, Stack<Integer>[] stack){
+    public static void add_neighbor(int sr, int de, int od, Stack<Integer>[] stack){
         Stack<Integer>[] s2 = copy(stack);
         Stack<Integer> src = s2[sr], dest = s2[de];
         int src_top = top(src);
-        long nd = od + add(src_top, dest) + (dist(sr, de) + remove(src)) * cost[src_top];
+        int nd = od + add(src_top, dest) + (dist(sr, de) + remove(src)) * cost[src_top];
         String ns = encode(s2);
         if(!visited.containsKey(ns)){
             pq.add(new Pair<>(ns, nd));
             //System.out.println(visited.size() + " : " + ns + " " + nd);
         }
     }
-    public static PriorityQueue<Pair<String, Long>> pq;
-    public static HashMap<String, Long> visited;
+    public static PriorityQueue<Pair<String, Integer>> pq;
+    public static HashMap<String, Integer> visited;
     public static int[] entrance_coordinate = {0, 0, 1, 2, 3, 4, 5, 6, 6}, dest_index = {1, 3, 5, 7};
     public static void main(String[] args){
         //RUN-TIME: around 2.5s, logic optimized
@@ -195,9 +195,9 @@ public class Solution {
         //dijkstra
         pq = new PriorityQueue<>((_f, _s) -> (_f.b - _s.b > 0 ? 1 : -1));
         visited = new HashMap<>();
-        pq.add(new Pair<>(st, 0L));
+        pq.add(new Pair<>(st, 0));
         while(!pq.isEmpty()){
-            Pair<String, Long> p = pq.poll();
+            Pair<String, Integer> p = pq.poll();
             if(visited.containsKey(p.a)){
                 continue;
             }
@@ -209,7 +209,7 @@ public class Solution {
             visited.put(p.a, p.b);
 
             for(int de = 0; de <= 8; de += 2){
-                if(top_empty(stack[de]) == -1){
+                if(full(stack[de])){
                     continue;
                 }
                 for(int sr = 1; sr <= 7; sr += 2){
@@ -220,12 +220,8 @@ public class Solution {
             }
             for(int sr = 0; sr <= 8; sr += 2){
                 int type = top(stack[sr]);
-                if(type == -1){
-                    continue;
-                }
-                int de = 2 * type + 1;
-                if((all(type, stack[de])) && (reachable(sr, de, stack))){
-                    add_neighbor(sr, de, p.b, stack);
+                if(type != -1 && all(type, stack[type * 2 + 1]) && reachable(sr, type * 2 + 1, stack)){
+                    add_neighbor(sr, 2 * type + 1, p.b, stack);
                 }
             }
         }
