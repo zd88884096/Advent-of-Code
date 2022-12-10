@@ -1,0 +1,87 @@
+Graph Tools:
+
+HierHolzer's to find Eulerian Path
+
+void dfsEulerianPath(map<string, vector<string>>& graph, string node, vector<string>& path) {
+
+    // iterate adjacency list backwards to make use of vector.pop_back();
+    while (!graph[node].empty()) {
+        string v = graph[node].back();
+        if (!graph[node].empty())
+            graph[node].pop_back();
+        dfsEulerianPath(graph, v, path);
+    }
+    // Hierholzer's algorithm: add node when backtrack from node;
+    path.push_back(node);
+}
+
+For some graphs shortest s-t distance problems, if too many edges, can try meet in middle.
+
+Min-Cut: after max flow, run bfs from source, all reachable vertices with the residual graph would be in component S, all the rest in S'.
+
+Multi-source / sink: create super source ss (connecting to all sources with infinite capacity), same as st.
+
+Number of edge disjoint paths from s to t: give vertex flow 1 (which can be reduced to max flow by turning one vertex to 2 new vertices), and give each edge flow 1 (preserve the original graph).
+
+
+What algorithms to use for Max Cardinality Matching?
+
+if(bipartite){
+	if(greedy-able){
+		greedy bipartite matching
+	}
+	else if(weighted){
+		Hungarian Alg
+	}
+	else{
+		Dinic's
+	}
+}
+else if(graph small){
+	DP with Bitmask
+}
+else if(weighted){
+	Weighted MCM
+}
+else{
+	Edmond's
+}
+
+
+Heavy Light Decomposition:
+
+Solve path queries in O(log(N)) (log(N) paths could solve each query)
+Decomposing trees into many paths.
+An edge (a,b) in the tree is heavy is size(b) >= size(a) / 2, ignore the none heavy edges.
+Any paths in the original tree is included in log(N) heavy chains (since light chain decreases the size of the range more than half).
+
+If we identify (a,b) as heavy if b has the largest subtree under a, the properties still remain.
+
+*: usually if the queries can be solved in log(N) on linked list (line graph), then it can be done log(N) with Heavy Light Decomposition.
+
+Example:
+want to perform 2 queries:
+1. add a b k: add to each vertex on path (a,b) by value k
+2. sum a b: sum values of vertices on path (a,b)
+
+get LCA(a, b) = x, then solve(x, a) and solve(x, b), create a Segment Tree for each heavy chain, then solve(x, a) involves at most O(log(N)) (alternating between heavy chains and light edges) updates, time complexity per query is log^2(N). (Also record the two ends of each heavy chain to enable quick skip)
+
+
+Tree Isomorphism:
+Determining if 2 graphs are isomorphic (exists an f(V1) = V2 s.t. if (a, b) is an edge in G1, (f(a), f(b)) is an edge in G2).
+O(N) time complexity.
+
+If two trees are rooted, create a bracket representation of the tree.
+child[a] = b, c, d
+child[c] = e
+then b, d, e = (), c = (()), a = ((())()()) (c followed by b, d, sorted by length of brackets of each child)
+Notice strings can be O(N) in length, instead we do rolling hash to transform each string into an int.
+
+Unrooted, need to make sure 2 trees are rooted at the same vertex. So we select some vertex that is UNIQUE in every tree, like center or centroid.
+Center: the distance to the farthest vertex is minimum, which is the center of the longest path in the tree.
+
+Finding Center: BFS on tree, find farthest vertex from any root, denote as v.
+BFS starting from v, denote the farthest vertex as u.
+Center is in their middle.
+If there are 2 centers, simply try each one, takes twice the time.
+

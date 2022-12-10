@@ -1,0 +1,17 @@
+Sparse Table:
+
+Range Max Query:
+
+RMQ(0,0) RMQ(1,1) RMQ(2,2) ... RMQ(6,6)
+
+RMQ(0,1) RMQ(1,2) ... RMQ(5,6)
+
+RMQ(0,3) RMQ(1,4) ...
+
+Query RMQ(0,5) = Max(RMQ(0,3), RMQ(2,5))
+
+So for a sparse table to work, need an overlapping range query property (ranges maxed over can overlap).
+
+
+Square Root Decomposition:
+Q queries of (L, R) (number of distinct integers in A[L..R]): separate A into sqrt(N) buckets, sort the intervals by left boundary.

@@ -1,0 +1,159 @@
+read in octal and convert into binary:
+python:
+print("{0:b}".format(int(str(input()), 8)))
+
+
+
+java:
+int b = in.nextInt(8);
+
+baseConversion(String number, int sBase, int dBase)
+{
+    // Parse the number with source radix
+    // and return in specified radix(base)
+    return Integer.toString(
+        Integer.parseInt(number, sBase), dBase);
+}
+
+
+Count number of digits in base b:
+(int)floor(1 + log10((double) val) / log10((double)b))
+
+n-th root:
+Math.pow((double)a, 1.0 / (double)n)
+
+if N = a^i * b^j * c^k
+sum of divisors of N = (a^(i - 1) - 1) * (b^(j - 1) - 1) * (c^(k - 1) - 1) / ((a - 1) * (b - 1) * (c - 1))
+
+Count number of coprime numbers to N:
+Using Euler's Phi function:
+Euler(N) = N * product(1 - 1/pi), where pi is a prime factor of N
+
+solve linear diophantine equation:
+integer solution to 25x + 18y = 839
+compute gcd(25, 18) = 1
+extended euclidean alg: 25 * -5 + 18 * 7 = 1
+multiply both side by 839: 25 * -4195 + 18 * 5873 = 839
+-4195 + 18n >= 0, 5873 - 25n >= 0
+233.05 <= n <= 234.92, n = 234
+
+n-th fibonacci number = (a^n - (-a)^(-n)) / sqrt(5), where a = (1 + sqrt(5)) / 2
+or [1 1] ^ n.
+   [1 0] 
+
+
+catalan numbers: Cat(n + 1) = (4n + 2) / (n + 2) * Cat(n)
+(distinct binary trees with n vertices)
+(number of expressions containing n pairs of parentheses)
+
+Compute number of paths of length L in a graph (graph stored in adjacency matrix M): (M^L)[0][1]
+
+given p = a + b, q = a * b, and n, compute a^n + b^n
+X = a^n + b^n = (a + b) * (a ^ (n - 1) + b ^ (n - 1)) - (a * b) * (a ^ (n - 2) + b ^ (n - 2))
+recurrence: p * Xn-1 - q * Xn = Xn+2, p * Xn - q * Xn-1 = Xn+1
+[p -q] * [Xn+1] = [Xn+2]
+[1  0]   [Xn]	  [Xn+1]
+so [Xn+1] = [p -q]^n * [X1]
+   [Xn]		[1  0]	   [X0]
+
+Compute C(n + 1, k + 1) (n large k small) = sum p from k to n: C(p, n) = 2^(n - 1) - sum p from 1 to k - 1: C(p, n) with matrix multiplication
+
+suffix tree:
+Longest repeated substring in O(n): path with longest characters to a node that have two children or more.
+
+Longest common substring in O(n): a tree that added suffices of 2 strings, add a different character in the end of each string, find 
+path with longest characters to a node that have two children with different ending characters.
+
+the least significant 1 bit:
+x & -x
+
+n-queen problem: accelerated with 3 bitmasks.
+basic idea: iterate column by column.
+For each column j:
+	bit mask rw: i-th bit is 1 if row i is attacked already (thus attacking (i, j) too)
+	bit mask ld: i-th bit is 1 if some leftward diagonal attacks (i, j)
+	... rd: .... rightward ...
+
+code:
+int ans = 0, OK = (1<<n) - 1;
+void backtrack(int rw, int ld, int rd){
+	if(rw == OK){
+		//all n rows filled, since on each column there is at most one queen, this means that we've filled all n queens.
+		
+		ans++;
+		return;
+	}
+	int pos = OK & (~(rw | ld | rd)); //i-th bit of pos is true if (i, j) not attacked
+	while(pos){
+		int p = pos & -pos;
+		pos -= p;
+		backtrack(rw | p, (ld | p) << 1, (rd | p) >> 1);
+	}
+}
+
+int main(){
+	backtrack(0, 0, 0);
+}
+
+Rounding:
+
+PrintWriter out = new PrintWriter(System.out, true);
+out.printf("%.3f\n", lo);
+
+
+Tower of Hanoi:
+n disks, 3 poles A, B, C.
+
+Solution: 
+move disk 1 to n - 1 to B with C as intermediate.
+move disk n to c
+move disk 1 to n - 1 to C with A as intermediate.
+
+Can be solved with memoization.
+Optimal Moves: 2^n - 1.
+
+
+De Brujin Sequence of (n, alphabet set A):
+Shortest CIRCULAR string containing every string of length n with letters in A.
+Example De Brujin(3, {a, b}) = "aaababbb", length 8 = 2 ^ 3.
+
+Generally, De Brujin(n, A s.t. |A| = k) has length k ^ n (which is also the minimum possible length).
+
+Generating a De Brujin sequence: using a De Brujin Graph (Directed Graph, one vertex for each possible string of length n with letters in A, and an edge (s1, s2) if s2 = s1[1..n - 1] + c, c in A, the edge has label c)
+n^k vertices, n^(k+1) edges, each vertex has k incoming and k outgoing edges.
+
+Now perform eulerian tour on the De Brujin graph (n - 1, A), and concatenate the edge letters.
+
+Number of De Brujin sequence: (k!)^(k^(n - 1)) / (k^n)
+For k = 2, it's 2^(2^(n - 1) - n)
+
+
+Poly mult is the same as convolution of two sequences: s-th term of f * g = sum_{j + k = s}(fj * gk)
+
+Example: How many ways to get y = Aj + Bk, given array A, B.
+let fi = freq(i in A), gi = freq(i in B)
+Take (f * g)y as answer.
+
+All Dot products:
+A, B array, len(A) >= len(B), compute sum of dot(B, substring(A))
+Convolution of A and B, take the centers of terms in the convolution and get the answers.
+Example: A = 5 7 2 1 3 6, B = 2 1 3 4, convolution = 20, 43, 34, 27, 31, 38, 23, 12, 12. 27, 31, 38 are what we want.
+
+String Matching: detertine how many times B appears in A as a substring.
+fj = e^(i * 2pi * Aj / n)
+gj = e^(-i * 2pi * Bj / n)
+
+if the corresponding j-th term in convolution of f * g (refer to above) is equal to length of B, then string matches.
+
+Wildward String Matching: B can have '_' elements:
+set gj to 0 if B[j] = '_'
+corresponding term in convolution should be len(B) - B's wildcard counts
+
+All Distances:
+Given bitstring A, for all k, determine how many j s.t. Aj = A(j+k) = 1
+Just do all dot products of A and itself.
+
+
+Pollard Rho:
+Quicker factorization (probable factorization), time complexity around O(n ^ 1/4).
+

@@ -1,0 +1,4 @@
+When sorting by order:
+prove this:
+if an answer is feasible under an arbitrary order,
+it would still be feasible if two elements are swapped under some condition
