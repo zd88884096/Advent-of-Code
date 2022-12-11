@@ -7,14 +7,17 @@ public class Solution {
     @SuppressWarnings("unchecked")
     public static void main(String[] args){
         //idea: part I just simulate using Queue (first in first out)
-        //idea: part II, observe when some value increase beyond the product of the x in all (divisible by x),
-        //  modding it by the product of x (denoted by px) will not change its behavior in the subsequent rounds
+        //idea: part II, each monkey has a test in the form "true if new % x == 0"
+        //  denote the product of each such x for each monkey as px (in the example, px would be 23 * 19 * 13 * 17)
+        //  observe when some "old" is larger than px, modding it by px will not change its behavior in the subsequent rounds
         //  Because for all x, old % x = (old % px) % x (you can try to prove this by writing old as c * x + d, and px as e * c)
+        //      same for (old * m) % x = ((old % px) * m) % x
         //  And if we write out the transformation each value goes through in any monkey, we get
-        //  I: (old * b) % x = ((old % x) * (b % x)) % x = ((old % px) * b) % x, which means we can change any old to old % px and result wouldn't be affected
-        //  II: (old + b) % x = ((old % px) + b) % x with the same reason
-        //  III: (old * old) % x = ((old % x) * old) % x = ((old % px) * old) % x = (old * (old % px)) % x = ((old % x) * (old % px)) % x = ((old % px) * (old % px)) % x
+        //  type I: (old * b) % x = ((old % px) * b) % x
+        //  type II: (old + b) % x = ((old % px) + b) % x with the same reason
+        //  type III: (old * old) % x = ((old % px) * old) % x = (old * (old % px)) % x = ((old % px) * (old % px)) % x
         //  So we conclude we can change any old to old % px, result wouldn't be affected
+        //  and since px will be well within sqrt(the max value for long), we ensure each value we compute wouldn't cause overflow
 
         //initialize
         String[] arr = read_all_String();
@@ -43,7 +46,6 @@ public class Solution {
             toks = split(arr[i + 5], " ");
             false_targ[i / 7] = Integer.parseInt(toks[5]);
         }
-
         //simulate
         int round = 10000;
         for(int _e = 0; _e < round; ++_e){
