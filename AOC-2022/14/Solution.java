@@ -16,7 +16,7 @@ public class Solution {
         //  In each iteration, the stack stores the path P1 of some sand S1, we want to compute the path P2 of the next sand S2
         //      and store P2 in stack efficiently
         //
-        //  For the new sand, pop from stack's top (P1[-1]) (which is the previous sand's resting coordinate)
+        //  We pop from stack's top (P1[-1]) (which is the previous sand's resting coordinate)
         //  Then simulate S2 falling starting from the new top of stack, adding coordinates that S2 passes through to the stack
         //      until it reaches a rest, then add the resting coordinate of S2 to "occupied"
         //
