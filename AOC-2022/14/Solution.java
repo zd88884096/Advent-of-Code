@@ -11,13 +11,13 @@ public class Solution {
     public static void main(String[] args){
         //idea: Simulate, add all rocks and all resting sand along the way to a HashSet "occupied"
         //  Simulate falling sand by using a Stack representing the path of falling sand from (500, 0) to its resting place,
-        //      each element in the Stack is a coordinate that the previous sand passes through during its way of falling
+        //      each element in the Stack is a coordinate that the sand passes through during its way of falling
         //
         //  In each iteration, the stack stores the path P1 of some sand S1, we want to compute the path P2 of the next sand S2
-        //      and store it in stack efficiently
+        //      and store P2 in stack efficiently
         //
         //  For the new sand, pop from stack's top (P1[-1]) (which is the previous sand's resting coordinate)
-        //  Then simulate S2 falling starting from the new top of stack, adding coordinates that S2 passes through
+        //  Then simulate S2 falling starting from the new top of stack, adding coordinates that S2 passes through to the stack
         //      until it reaches a rest, then add the resting coordinate of S2 to "occupied"
         //
         //  This essentially avoids iteration through all the overlap coordinates between P1 and P2, which is P1[0..-2] (surprisingly P2 follow P1
@@ -25,10 +25,16 @@ public class Solution {
         //  
         //  We can prove the correctness of this algorithm by noting that:
         //  In each iteration, only the top of the stack (The resting coordinate of S1 will be occupied, 
-        //  the rest of the path = P1[0..-2] will be unoccupied, so S2 will follow P1[0..-2] without changes, 
-        //      since P1[0..-2] with all empty spaces will only change if one of the empty space along P1[0..-2] becomes occupied
-        //          (you can prove this lemma by thinking about 3 cases: sand falling down, left down, right down, and see what happens if
-        //          you occupy some empty space not on P1[0..-2] - S2 will still follow P1[0..-2]
+        //  the rest of the path = P1[0..-2] will be unoccupied, so we claim S2 will follow P1[0..-2] without changes (i.e. the first coordinates that S2
+        //      passes through will be P1[0..-2])
+        //
+        //  Pf for the claim:
+        //      Prove with induction on P1[i], WTS P1[i] == P2[i] for all i in 0..(len(P1) - 2):
+        //      Base case: P1[0] = (500, 0), both S1 and S2 start from (500, 0), so P1[0] = P2[0]
+        //      Inductive case: Assume P1[k - 1] == P2[k - 1]
+        //          If S1 fell down directly from P1[k - 1] to P1[k], S2 will too, since P1[k] is not occupied (otherwise S1 will have stopped at P1[k] != P1[-1],
+        //              Since only the end of P1 is occupied after S1 rests)
+        //          Same for the case when S1 fell left down or right down.
 
         int ct = 0;
         //view rocks and occupied sand in the same way: as rocks
