@@ -90,7 +90,7 @@ public class Solution {
             else if(type == 5){
                 long l0 = sub_packets.get(0);
                 long l1 = sub_packets.get(1);
-                ret = l1 > l0 ? 1L : 0L;
+                ret = l0 > l1 ? 1L : 0L;
             }
             else if(type == 6){
                 long l0 = sub_packets.get(0);
