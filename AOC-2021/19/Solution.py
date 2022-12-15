@@ -173,7 +173,7 @@ for i in range(len(scanners)):
         x = have_overlap(scanners[i], scanners[j], i, j)
         if x:
             adj[i].append((j, x[0], x[1]))
-            adj[j].append((i, rotations(neg(x[0]))[x[1]], inv(x[1])))
+            adj[j].append((i, neg(rotations(x[0])[x[1]]), inv(x[1])))
 
 # DFS time!
 beacons = set()

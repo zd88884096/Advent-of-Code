@@ -3,92 +3,136 @@ import java.io.*;
 import java.lang.Math;
 
 public class Solution {
-    public static int[] subtract(int[] arr, int amount){
-        for(int i = 0; i < arr.length; ++i){
-            arr[i] -= amount;
+    public static char[] hex = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'}, packet;
+    
+    //sum of version of all subpackets, and index of current char (current bit) used when iterating the packet
+    public static long ver_sum;
+    public static int ind;
+    public static long get_long(int num_digit){
+        long res = 0L;
+        int st = ind;
+        while(ind < st + num_digit){
+            res = res * 2 + (packet[ind] == '1' ? 1 : 0);
+            ++ind;
         }
-        return arr;
+        return res;
     }
+
+    //parse "num" number of packets or "len" characters
+    //  returns: value of the each evaluated sub_packet
+    public static List<Long> parse(long num, long len){
+        List<Long> l = new ArrayList<>();
+
+        //parse "num" number of packets, len would always be set to 0 in this case when inputted
+        if(num > 0){
+            for(int s = 0; s < num; ++s){
+                l.add(parse_one_packet());
+            }
+        }
+        //parse "len" characters, num always set to 0 in this case
+        else{
+            int st = ind;
+            while(ind < st + len){
+                l.add(parse_one_packet());
+            }
+        }
+        return l;
+    }
+
+    //parse one packet
+    //mutual recursion with parse
+    public static long parse_one_packet(){
+        long ver = get_long(3), type = get_long(3);
+        ver_sum += ver;
+        if(type == 4){
+            long cur = 0L, digit = 0L;
+            do{
+                digit = get_long(5);
+                cur = cur * 16 + digit % 16;
+            } while(digit >= 16L);
+            return cur;
+        }
+        else{
+            long LID = get_long(1);
+            List<Long> sub_packets;
+            if(LID == 0L){
+                long new_len = get_long(15);
+                sub_packets = parse(0, new_len);
+            }
+            else{
+                long new_num = get_long(11);
+                sub_packets = parse(new_num, 0);
+            }
+            long ret = 0L;
+            if(type == 0){
+                for(int i = 0; i < sub_packets.size(); ++i){
+                    ret += sub_packets.get(i);
+                }
+            }
+            else if(type == 1){
+                ret = 1L;
+                for(int i = 0; i < sub_packets.size(); ++i){
+                    ret *= sub_packets.get(i);
+                }
+            }
+            else if(type == 2){
+                ret = Long.MAX_VALUE;
+                for(int i = 0; i < sub_packets.size(); ++i){
+                    ret = Math.min(ret, sub_packets.get(i));
+                }
+            }
+            else if(type == 3){
+                ret = 0L;
+                for(int i = 0; i < sub_packets.size(); ++i){
+                    ret = Math.max(ret, sub_packets.get(i));
+                }
+            }
+            else if(type == 5){
+                long l0 = sub_packets.get(0);
+                long l1 = sub_packets.get(1);
+                ret = l1 > l0 ? 1L : 0L;
+            }
+            else if(type == 6){
+                long l0 = sub_packets.get(0);
+                long l1 = sub_packets.get(1);
+                ret = l0 < l1 ? 1L : 0L;
+            }
+            else{
+                //disgusting bug of java implementation
+                //if you use sub_packets.get(0) == sub_packets.get(1) instead for comparison
+                //  even if those are equal numerically, it would still return 0...
+                long l0 = sub_packets.get(0);
+                long l1 = sub_packets.get(1);
+                ret = l0 == l1 ? 1L : 0L;
+            }
+            //System.out.println("type: " + type + " ret: " + ret + " " + sub_packets);
+            return ret;
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public static void main(String[] args){
-        /* part I: 
-        //brute force simulate, only have to be careful when
-        //  iterating large ranges, we instead iterate the intersection of those 
-        //  ranges with [-50, 50] to speed things up
-        int lower = -50, upper = 50, len = upper - lower + 1;
-        boolean[][][] on = new boolean[len][len][len];
-        for(String S : read_all_String()){
-            String[] toks = split(S, "[ .=,xyz]");
-            int[] range = subtract(stoi(subarray(toks, 1, toks.length)), lower);
-            print(range);
-            for(int i = Math.max(0, range[0]); i <= Math.min(len - 1, range[1]); ++i){
-                for(int j = Math.max(0, range[2]); j <= Math.min(len - 1, range[3]); ++j){
-                    for(int k = Math.max(0, range[4]); k <= Math.min(len - 1, range[5]); ++k){
-                        on[i][j][k] = toks[0].equals("on");
-                    }
-                }
-            }
-            int ct = 0;
-            for(int i = 0; i < len; ++i){
-                for(int j = 0; j < len; ++j){
-                    for(int k = 0; k < len; ++k){
-                        ct += on[i][j][k] ? 1 : 0;
-                    }
-                }
-            }
-            System.out.println("Task 1: " + ct);
-        }*/
+        //idea: Part I: just parse out the packet, use helper, for type ID = 4 it's pretty easy
+        //  use different method of iteration when length type ID are different (see how the mutual recursion
+        //      part of the function "parse" and "parse_one_packet" works)
+        //idea: Part II: record values of evaluated sub_packets and apply operation specified by type ID
 
-        //part II, had a more complex, codeable idea
-        //  adopted idea of coordinate compression from Neal Wu's video
-        //  https://www.youtube.com/watch?v=YKpViLcTp64
-        //  Just do coordinate compression, his video explains it pretty well
-        //  Run Time: C++ 2s, Java 2 min (FFFFFFFFFFFF)
-        TreeMap<Long, Integer>[] map = new TreeMap[3];
-        TreeMap<Integer, Long>[] rev = new TreeMap[3];
-        String[] arr = read_all_String();
-        for(int i = 0; i < 3; ++i){
-            map[i] = new TreeMap<>();
-            rev[i] = new TreeMap<>();
+        //change hex to binary string
+        ver_sum = 0;
+        ind = 0;
+        HashMap<Character, Integer> digit_map = new HashMap<>();
+        for(int i = 0; i < hex.length; ++i){
+            digit_map.put(hex[i], i);
         }
-        for(String S : arr){
-            String[] toks = split(S, "[ .=,xyz]");
-            long[] range = stol(subarray(toks, 1, toks.length));
-            for(int i = 0; i < 3; ++i){
-                map[i].put(range[i * 2], -1);
-                map[i].put(range[i * 2 + 1] + 1, -1);
-            }
+        StringBuilder sb = new StringBuilder();
+        for(char c : read_all_char_arr()[0]){
+            sb.append(pad(Integer.toBinaryString(digit_map.get(c)), '0', 4, 0));
         }
-        for(int i = 0; i < 3; ++i){
-            int ind = 0;
-            for(long ele : map[i].keySet()){
-                //put them in order
-                map[i].put(ele, ind);
-                rev[i].put(ind, ele);
-                ++ind;
-            }
-        }
-        boolean[][][] on = new boolean[map[0].size() - 1][map[1].size() - 1][map[2].size() - 1];
-        for(String S : arr){
-            String[] toks = split(S, "[ .=,xyz]");
-            long[] range = stol(subarray(toks, 1, toks.length));
-            for(int i = map[0].get(range[0]); i < map[0].get(range[1] + 1); ++i){
-                for(int j = map[1].get(range[2]); j < map[1].get(range[3] + 1); ++j){
-                    for(int k = map[2].get(range[4]); k < map[2].get(range[5] + 1); ++k){
-                        on[i][j][k] = toks[0].equals("on");
-                    }
-                }
-            }
-        }
-        long ct = 0L;
-        for(int i = 0; i < on.length; ++i){
-            for(int j = 0; j < on[0].length; ++j){
-                for(int k = 0; k < on[0][0].length; ++k){
-                    ct += on[i][j][k] ? (rev[0].get(i + 1) - rev[0].get(i)) * (rev[1].get(j + 1) - rev[1].get(j)) * (rev[2].get(k + 1) - rev[2].get(k)) : 0L;
-                }
-            }
-        }
-        System.out.println(ct);
+
+        packet = sb.toString().toCharArray();
+        long result = parse_one_packet();
+        System.out.println("Task 1: " + ver_sum);
+        System.out.println("Task 2: " + result);
     }
     
 
@@ -99,6 +143,16 @@ public class Solution {
     public static int[] dir_card = {1, 0, -1, 0, 1};
     //same thing, 8 directions, for i in [0..7]
     public static int[] dir_all = {1, 0, -1, 0, 1, -1, -1, 1, 1};
+
+    //pad character c onto String S until it reaches target_len
+    //pad on left if side == 0, right otherwise
+    public static String pad(String S, char c, int target_len, int side){
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < target_len - S.length(); ++i){
+            sb.append(c);
+        }
+        return side == 0 ? (sb.toString() + S) : (S + sb.toString());
+    }
 
     public static int[][] rotate_90(int[][] arr){
         int row = arr.length, col = arr[0].length;
@@ -266,6 +320,11 @@ public class Solution {
     public static void print(long[] aa){
         for(int i = 0; i < aa.length; ++i)
             System.out.print(aa[i] + "\t");
+        System.out.println();
+    }
+    public static void print(char[] aa){
+        for(int i = 0; i < aa.length; ++i)
+            System.out.print(aa[i]);
         System.out.println();
     }
     public static void print(int[][] aa){
