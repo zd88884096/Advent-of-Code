@@ -87,6 +87,7 @@ public class Solution {
         //      As Seg Tree[x] only has value 1 or 0. So we keep count to record how many intervals x are actually in.
         //      So that when it gets out of an interval, we do count[x]--, and check if count[x] == 0, and only then do we set Seg Tree[x] to 0
         //  Same thing for count, for each y-coordinate for each interval, only the values of 2 elements on the boundary needs to have their value changed in count
+        
         String[] input_str = read_all_String();
         int N = input_str.length;
         long task1_y = 2000000, task2_y = 4000000;
