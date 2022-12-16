@@ -73,18 +73,43 @@ public class Solution {
     public static long manhattan(long x1, long y1, long x2, long y2){
         return Math.abs(x1 - x2) + Math.abs(y1 - y2);
     }
+
     @SuppressWarnings("unchecked")
     public static void main(String[] args){
-        String[] input = read_all_String();
-        int N = input.length;
-        long task1_y = 2000000;
-        long task2_y = 4000000;
+        //idea: Simulate each y-coordinate one by one
+        //Really ugly implementation with Segment Tree (just wanted to get warmed up again with Seg Tree)
+        //  Noticed that for each y coordinate, for each current interval, only the 2 elements on the two boundaries of each interval
+        //  will get removed or added, so we create a Segment Tree s.t. for each x-coordinate, if it's in some interval, its value in the tree
+        //  is set to 1, otherwise 0. For each y-coordinate we can sum the elements in the Seg Tree subtracting number of beacons on the y-coordinate
+        //  to get the answer for any y for task 1
+        //  We keep an additional array count s.t. count[x] is how many intervals contain x, to know when to set a value in Seg Tree to be 0
+        //      Say x is in 2 intervals, if it gets out of one interval, it's still in the other, but we couldn't keep that info in Seg Tree
+        //      As Seg Tree[x] only has value 1 or 0. So we keep count to record how many intervals x are actually in.
+        //      So that when it gets out of an interval, we do count[x]--, and check if count[x] == 0, and only then do we set Seg Tree[x] to 0
+        //  Same thing for count, for each y-coordinate for each interval, only the values of 2 elements on the boundary needs to have their value changed in count
+        String[] input_str = read_all_String();
+        int N = input_str.length;
+        long task1_y = 2000000, task2_y = 4000000;
+        long[][] input = new long[N][4];
+        //Record all events like when an interval first appears
+        //when it changes from expanding along x to shrinking
+        //and when it disappears
         HashMap<Long, HashSet<Triple<Integer, Integer, Integer>>> events = new HashMap<>();
+        //intervals[i] stores info for the x range for the i-th scanner (intervals is updated every y-coordinate)
+        //  [i][0] = x range's left bound, [i][1] = x range's right bound, [i][2] = 1 if x range expanding, = -1 if shrinking, 0 if no x range for scanner i at
+        //  the current y-coordinate
         int[][] intervals = new int[N][3];
+
+        //stores coordinate of beacons (y, list of x) for different beacons on each y
         HashMap<Long, HashSet<Long>> beacon = new HashMap<>();
+
+        for(int i = 0; i < N; ++i){
+            input[i] = stol(split(input_str[i], "[Senoisratclebxy= :,]"));
+        }
+
         long min_y = Long.MAX_VALUE, max_y = Long.MIN_VALUE, min_x = Long.MAX_VALUE, max_x = Long.MIN_VALUE;
         for(int i = 0; i < N; ++i){
-            long[] arr = stol(split(input[i], "[Senoisratclebxy= :,]"));
+            long[] arr = input[i];
             long dist = manhattan(arr[0], arr[1], arr[2], arr[3]);
             min_y = Math.min(min_y, arr[1] - dist);
             max_y = Math.max(max_y, arr[1] + dist);
@@ -92,37 +117,53 @@ public class Solution {
             max_x = Math.max(max_x, arr[0] + dist);
             beacon.putIfAbsent(arr[3], new HashSet<>());
             beacon.get(arr[3]).add(arr[2]);
+            //fixes the bug where when intervals[i][0] == [i][1] == [i][2] = 0, intervals[i][0] reduces by 1 (we don't want this)
+            //  so we initially set intervals[i][0] to be 1 != 0 = [i][1]
             intervals[i][0] = 1;
         }
         for(int i = 0; i < N; ++i){
-            long[] arr = stol(split(input[i], "[Senoisratclebxy= :,]"));
+            long[] arr = input[i];
+            //shift x coordinate
             arr[0] -= min_x;
             arr[2] -= min_x;
             long dist = manhattan(arr[0], arr[1], arr[2], arr[3]);
             events.putIfAbsent(arr[1] - dist, new HashSet<>());
             events.putIfAbsent(arr[1] + 1, new HashSet<>());
             events.putIfAbsent(arr[1] + dist + 1, new HashSet<>());
+            //event for interval appearing
             events.get(arr[1] - dist).add(new Triple<>((int)arr[0], i, 1));
+            //event for interval going from expanding to shrinking
             events.get(arr[1] + 1).add(new Triple<>((int)arr[0], i, -1));
+            //event for interval disappearing
             events.get(arr[1] + dist + 1).add(new Triple<>((int)arr[0], i, 0));
         }
 
         int x_span = (int)(max_x - min_x + 1);
         int[] count = new int[x_span];
-        long tot = 0L, specific = 0L;
+        //answer for part 1
+        long specific = 0L;
         SegTree seg = new SegTree(count);
+        //answer for part 2
         long task2_ans_x = 0L, task2_ans_y = 0L;
-        //simulate
-        //System.out.println(min_x);
+        
+        //simulate     
         for(long i = min_y; i <= max_y; ++i){
             if(events.containsKey(i)){
                 for(Triple<Integer, Integer, Integer> t : events.get(i)){
-                    //System.out.println("event" + " " + t.a + " " + t.b + " " + t.c);
                     intervals[t.b][2] = t.c;
+                    //interval appearing, set left and right boundary to t.a
                     if(t.c == 1){
                         intervals[t.b][0] = t.a;
                         intervals[t.b][1] = t.a;
                     }
+                    //interval starting to shrink
+                    //reduce interval
+                    //(in the previous iteration, the interval over-expanded by 1)
+                    //we want to shrink it by 1 so that the interval is the same as the previous y-coordinate
+                    //then we can iteratively remove the boundaries
+                    //for instance, say the previous iteration, the interval range is [3, 7]
+                    //in this shrinking iteration, we keep it [3, 7], but instead remove the boundaries
+                    //so in fact after removing, it only has +1 in [4, 6] in "count".
                     else if(t.c == -1){
                         intervals[t.b][0]++;
                         intervals[t.b][1]--;
@@ -136,6 +177,7 @@ public class Solution {
                     if(count[in[1]] == 0){
                         seg.update(in[1], 0);
                     }
+                    //deals with the edge case when in[1] == in[1] (interval first appearing and when disappearing)
                     if(in[1] != in[0]){
                         count[in[0]]--;
                         if(count[in[0]] == 0){
@@ -157,17 +199,31 @@ public class Solution {
                     }
                 }
                 else if(in[0] == in[1]){
+                    //removes the last element in the interval when interval disappears
                     count[in[0]]--;
                     if(count[in[0]] == 0){
                         seg.update(in[0], 0);
                     }
+
+                    //to make in[0] > in[1], so that this interval never falls into this else if again
                     ++in[0];
                 }
+                //update interval according to in[2] (either -1, 0, or 1, -1 shrinks, 1 expands, 0 does nothing to the interval)
                 in[0] -= in[2];
                 in[1] += in[2];
             }
+            //Part I -------------------
             long sum = seg.sumRange(0, x_span - 1);
-            tot += sum;
+            if(i == task1_y){
+                specific = sum;
+                if(beacon.containsKey(i)){
+                    specific -= beacon.get(i).size();
+                }
+            }
+            //Part I -------------------
+
+            //Part II-------------------
+            //sum range between 0 and 4000000, if sum < 4000001, means some x is not in any interval, then find such x
             long sum_distress = seg.sumRange((int)(-1 * min_x), (int)Math.min(-1 * min_x + task2_y, x_span - 1));
             if(i >= 0 && i <= task2_y && sum_distress < task2_y + 1){
                 for(long j = -1 * min_x; j <= -1 * min_x + task2_y; ++j){
@@ -177,17 +233,7 @@ public class Solution {
                     }
                 }
             }
-            //System.out.println("i: " + i);
-            //System.out.print("count: ");
-            //print(count);
-            //System.out.println("sum: " + sum);
-            //print(seg.tree);
-            if(i == task1_y){
-                specific = sum;
-                if(beacon.containsKey(i)){
-                    specific -= beacon.get(i).size();
-                }
-            }
+            //Part II-------------------
         }
         System.out.println("Task 1: " + specific);
         System.out.println("Task 2: " + task2_ans_x + " " + task2_ans_y + " " + (task2_ans_x * 4000000 + task2_ans_y));
@@ -357,7 +403,6 @@ public class Solution {
         return arr;
     }
 
-    
     public static <T> void print(T[] aa){
         for(int i = 0; i < aa.length; ++i)
             System.out.print(aa[i] + "\t");
