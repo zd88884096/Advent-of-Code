@@ -78,6 +78,7 @@ public class Solution {
         String[] input = read_all_String();
         int N = input.length;
         long task1_y = 2000000;
+        long task2_y = 4000000;
         HashMap<Long, HashSet<Triple<Integer, Integer, Integer>>> events = new HashMap<>();
         int[][] intervals = new int[N][3];
         HashMap<Long, HashSet<Long>> beacon = new HashMap<>();
@@ -110,6 +111,7 @@ public class Solution {
         int[] count = new int[x_span];
         long tot = 0L, specific = 0L;
         SegTree seg = new SegTree(count);
+        long task2_ans_x = 0L, task2_ans_y = 0L;
         //simulate
         //System.out.println(min_x);
         for(long i = min_y; i <= max_y; ++i){
@@ -166,6 +168,15 @@ public class Solution {
             }
             long sum = seg.sumRange(0, x_span - 1);
             tot += sum;
+            long sum_distress = seg.sumRange((int)(-1 * min_x), (int)Math.min(-1 * min_x + task2_y, x_span - 1));
+            if(i >= 0 && i <= task2_y && sum_distress < task2_y + 1){
+                for(long j = -1 * min_x; j <= -1 * min_x + task2_y; ++j){
+                    if(count[(int)j] == 0){
+                        task2_ans_x = j + min_x;
+                        task2_ans_y = i;
+                    }
+                }
+            }
             //System.out.println("i: " + i);
             //System.out.print("count: ");
             //print(count);
@@ -179,7 +190,7 @@ public class Solution {
             }
         }
         System.out.println("Task 1: " + specific);
-        System.out.println("Task 2: " + tot);
+        System.out.println("Task 2: " + task2_ans_x + " " + task2_ans_y + " " + (task2_ans_x * 4000000 + task2_ans_y));
 
     }
     
