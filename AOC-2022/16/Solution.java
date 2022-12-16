@@ -6,7 +6,7 @@ public class Solution {
     public static int[][][] dp;
     public static int[][] adj;
     public static int[] flow, dist_from_AA;
-    public static int max_flow, N, max_dist_pos_flow_valves, max_dist_AA;
+    public static int max_flow, N;
     public static int flow_sum(int mask){
         int res = 0;
         for(int i = 0; i < flow.length; ++i){
@@ -53,6 +53,7 @@ public class Solution {
 
     @SuppressWarnings("unchecked")
     public static void main(String[] args){
+        //adopted idea for optimization from Prof. Sotomayor
         String[] input = read_all_String();
         N = input.length;
         max_flow = 0;
@@ -78,7 +79,7 @@ public class Solution {
                 adj[i][map.get(toks[j])] = 1;
             }
         }
-        //compute shortest distance between all pairs of points
+        //compute shortest distance between all pairs of points with Floyd Warshall
         //  and compress graph to only vertices with >0 flow (as we'll never open valves with 0 flow)
         //  So we only use those to reach vertices with >0 flow (per Prof. Sotomayor's idea)
         int[][] dist = new int[N][N];
@@ -109,10 +110,8 @@ public class Solution {
         for(Triple<Integer, Integer, Integer> src : pos_flow){
             flow[src.a] = src.c;
             dist_from_AA[src.a] = dist[AA_index][src.b];
-            max_dist_AA = Math.max(max_dist_AA, dist_from_AA[src.a]);
             for(Triple<Integer, Integer, Integer> dest : pos_flow){
                 adj[src.a][dest.a] = dist[src.b][dest.b];
-                max_dist_pos_flow_valves = Math.max(max_dist_pos_flow_valves, adj[src.a][dest.a]);
             }
         }
         //print(adj);
