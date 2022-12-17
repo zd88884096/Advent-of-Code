@@ -3,10 +3,29 @@ import java.io.*;
 import java.lang.Math;
 
 public class Solution {
+    //idea: Exhaustive Search but with optimization
+    //Optimization I: use DP to store computed result and avoid recomputation during recursion
+
+    //Optimization II: change the original graph to a weighted graph ignoring all vertices with 0 flow (since we
+    // don't get any benefit by opening vault there)
+    //So now we have 16 vertices, time complexity of part II is 2^32 * 16 * 26
+
+    //Optimization III:
+    //  We notice that there are many values in the memoization dp array where we don't really compute (assuming we use top-down recursion 
+    //      to compute the flow instead of bottom-up)
+    //  So when computing the max flow for each subset in Part II, we first make sure we reuse the DP array
+    //      (not allocating new memory for every computation), then we also record the indices of the DP array (in dp_changed, with dp_changed_ind 
+    //          being the right boundary for the recorded indices in dp_changed, so that we only have to allocated memory for dp_changed once)
+    //      we actually computed, and before the next computation, we just need to reset those indices to the DP array's
+    //      original value (-1) but not having to fill all values in the DP array to -1 (and after resetting, this DP array
+    //      is as good as new)!
+    //  This reduces run time from 5 minutes to 7 seconds.
+    
     public static int[][][] dp;
     public static int[][] adj;
-    public static int[] flow, dist_from_AA;
-    public static int max_flow, N;
+    public static int[] flow, dist_from_AA, dp_changed;
+    public static int max_flow, N, dp_changed_ind;
+    //flow per second given a mask representing vaults that are already opened
     public static int flow_sum(int mask){
         int res = 0;
         for(int i = 0; i < flow.length; ++i){
@@ -20,6 +39,11 @@ public class Solution {
         if(dp[time][cur][mask] >= 0){
             return dp[time][cur][mask];
         }
+        dp_changed[dp_changed_ind] = time;
+        dp_changed[dp_changed_ind + 1] = cur;
+        dp_changed[dp_changed_ind + 2] = mask;
+        dp_changed_ind += 3;
+
         //max flow if we do nothing starting from now
         dp[time][cur][mask] = flow_sum(mask) * time;
 
@@ -36,12 +60,11 @@ public class Solution {
 
     public static int compute_flow(int allowed_mask, int tot_time){
         max_flow = 0;
-        //make dp[0] equal to 0 (0 time, no flow can be obtained), and the rest as -1 (representing not computed yet)
-        for(int i = 1; i < 31; ++i){
-            for(int j = 0; j < N; ++j){
-                Arrays.fill(dp[i][j], -1);
-            }
+        //reset values in DP that were changed in the last computation to make is as good as new
+        for(int i = 0; i < dp_changed_ind; i += 3){
+            dp[dp_changed[i]][dp_changed[i + 1]][dp_changed[i + 2]] = -1;
         }
+        dp_changed_ind = 0;
         //since we start at AA, we have to first move from AA to vertices with positive flow
         //then dfs, all valves are allowed to be used
         for(int i = 0; i < N; ++i){
@@ -107,6 +130,8 @@ public class Solution {
         adj = new int[N][N];
         flow = new int[N];
         dist_from_AA = new int[N];
+        dp_changed = new int[N * (1 << N)];
+        dp_changed_ind = 0;
         for(Triple<Integer, Integer, Integer> src : pos_flow){
             flow[src.a] = src.c;
             dist_from_AA[src.a] = dist[AA_index][src.b];
@@ -120,6 +145,12 @@ public class Solution {
         //dp[i][j][k] = max flow one can obtain by being at valve j with valves in k (bitmasked)
         //  already open and with i minutes remaining
         dp = new int[31][N][1 << N];
+        for(int i = 1; i < 31; ++i){
+            for(int j = 0; j < N; ++j){
+                Arrays.fill(dp[i][j], -1);
+            }
+        }
+
         int all_mask = (1 << N) - 1;
         
         System.out.println("Task 1: " + compute_flow(all_mask, 30));
