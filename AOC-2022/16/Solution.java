@@ -10,31 +10,18 @@ public class Solution {
     // don't get any benefit by opening vault there)
     //So now we have 16 vertices, time complexity of part II is 2^32 * 16 * 26
 
-    //Optimization III:
-    //  We notice that there are many values in the memoization dp array where we don't really compute (assuming we use top-down recursion 
-    //      to compute the flow instead of bottom-up)
-    //  So when computing the max flow for each subset in Part II, we first make sure we reuse the DP array
-    //      (not allocating new memory for every computation), then we also record the indices of the DP array (in dp_changed, with dp_changed_ind 
-    //          being the right boundary for the recorded indices in dp_changed, so that we only have to allocated memory for dp_changed once)
-    //      we actually computed, and before the next computation, we just need to reset those indices to the DP array's
-    //      original value (-1) but not having to fill all values in the DP array to -1 (and after resetting, this DP array
-    //      is as good as new)!
-    //  This reduces run time from 5 minutes to 7 seconds.
+    //Optimization IV: for Part II, never reinitialize "dp", instead keep it the same, as with each subset of valves chosen to compute max flow
+    //  we just do dfs on the mask created by this subset (with all bits for element in the subset set to 1), this dfs aligns with the definition of dp
+    //  thus, our answer is correct and we can save lots of recomputation
     
     public static int[][][] dp;
     public static int[][] adj;
-    public static int[] flow, dist_from_AA, dp_changed;
-    public static int max_flow, N, dp_changed_ind;
+    public static int[] flow, dist_from_AA;
+    public static int max_flow, N;
     public static int dfs(int time, int cur, int mask){
         if(dp[time][cur][mask] >= 0){
             return dp[time][cur][mask];
         }
-        /*
-        dp_changed[dp_changed_ind] = time;
-        dp_changed[dp_changed_ind + 1] = cur;
-        dp_changed[dp_changed_ind + 2] = mask;
-        dp_changed_ind += 3;
-        */
         int ans = 0, mask_copy = mask;
         for(int i = 0; i < N; ++i){
             int d = adj[cur][i] + 1;
@@ -43,17 +30,16 @@ public class Solution {
                 continue;
             ans = Math.max(ans, dfs(time - d, i, mask - (1 << i)));
         }
+        //add the flow contributed by valve "cur" with "time" time remaining (as valve cur is opened at exactly "time" time remaining, flow[cur] * time will
+        //  be all flow that cur contributes) 
+        //  to max(dp[time - d][i][mask - (1 << i)] for some valid i 
+        //  (being at i with time - d time left and remaining (mask - (1 << i)) allowed valves left to open))
         dp[time][cur][mask] = flow[cur] * time + ans;
         return dp[time][cur][mask];
     }
 
     public static int compute_flow(int mask, int tot_time){
         max_flow = 0;
-        //reset values in DP that were changed in the last computation to make is as good as new
-        /*for(int i = 0; i < dp_changed_ind; i += 3){
-            dp[dp_changed[i]][dp_changed[i + 1]][dp_changed[i + 2]] = -1;
-        }
-        dp_changed_ind = 0;*/
         //since we start at AA, we have to first move from AA to vertices with positive flow
         //then dfs, all valves are allowed to be used
         for(int i = 0; i < N; ++i){
@@ -88,7 +74,6 @@ public class Solution {
         for(int i = 0; i < N; ++i){
             String[] toks = split(input[i], "[ =;,rateflowvunsdh]");
             for(int j = 3; j < toks.length; ++j){
-                //System.out.println(i + " " + map.get(toks[j]));
                 adj[i][map.get(toks[j])] = 1;
             }
         }
@@ -120,8 +105,6 @@ public class Solution {
         adj = new int[N][N];
         flow = new int[N];
         dist_from_AA = new int[N];
-        dp_changed = new int[N * (1 << N)];
-        dp_changed_ind = 0;
         for(Triple<Integer, Integer, Integer> src : pos_flow){
             flow[src.a] = src.c;
             dist_from_AA[src.a] = dist[AA_index][src.b];
