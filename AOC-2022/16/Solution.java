@@ -25,58 +25,48 @@ public class Solution {
     public static int[][] adj;
     public static int[] flow, dist_from_AA, dp_changed;
     public static int max_flow, N, dp_changed_ind;
-    //flow per second given a mask representing vaults that are already opened
-    public static int flow_sum(int mask){
-        int res = 0;
-        for(int i = 0; i < flow.length; ++i){
-            if(((1 << i) & mask) > 0){
-                res += flow[i];
-            }
-        }
-        return res;
-    }
-    public static int dfs(int time, int cur, int mask, int allowed_mask){
+    public static int dfs(int time, int cur, int mask){
         if(dp[time][cur][mask] >= 0){
             return dp[time][cur][mask];
         }
+        /*
         dp_changed[dp_changed_ind] = time;
         dp_changed[dp_changed_ind + 1] = cur;
         dp_changed[dp_changed_ind + 2] = mask;
         dp_changed_ind += 3;
-
-        //max flow if we do nothing starting from now
-        dp[time][cur][mask] = flow_sum(mask) * time;
-
+        */
+        int ans = 0, mask_copy = mask;
         for(int i = 0; i < N; ++i){
             int d = adj[cur][i] + 1;
-            //valves that are already open or not allowed to visit or not enough time to reach valve and turn it on
-            if(((1 << i) & mask) > 0 || ((1 << i) & allowed_mask) == 0 || d > time)
+            //valves that are not allowed to visit or not enough time to reach valve and turn it on
+            if(((1 << i) & mask) == 0 || d > time)
                 continue;
-            dp[time][cur][mask] = Math.max(dp[time][cur][mask], dfs(time - d, i, mask + (1 << i), allowed_mask) + flow_sum(mask) * d);
+            ans = Math.max(ans, dfs(time - d, i, mask - (1 << i)));
         }
-        max_flow = Math.max(max_flow, dp[time][cur][mask]);
+        dp[time][cur][mask] = flow[cur] * time + ans;
         return dp[time][cur][mask];
     }
 
-    public static int compute_flow(int allowed_mask, int tot_time){
+    public static int compute_flow(int mask, int tot_time){
         max_flow = 0;
         //reset values in DP that were changed in the last computation to make is as good as new
-        for(int i = 0; i < dp_changed_ind; i += 3){
+        /*for(int i = 0; i < dp_changed_ind; i += 3){
             dp[dp_changed[i]][dp_changed[i + 1]][dp_changed[i + 2]] = -1;
         }
-        dp_changed_ind = 0;
+        dp_changed_ind = 0;*/
         //since we start at AA, we have to first move from AA to vertices with positive flow
         //then dfs, all valves are allowed to be used
         for(int i = 0; i < N; ++i){
-            if(((1 << i) & allowed_mask) > 0)
-                dfs(tot_time - dist_from_AA[i] - 1, i, 1 << i, allowed_mask);
+            if(((1 << i) & mask) > 0)
+                max_flow = Math.max(max_flow, dfs(tot_time - dist_from_AA[i] - 1, i, mask - (1 << i)));
         }
         return max_flow;
     }
-
+    public static long startTime, endTime;
     @SuppressWarnings("unchecked")
     public static void main(String[] args){
         //adopted idea for optimization from Prof. Sotomayor
+        startTime = System.nanoTime();
         String[] input = read_all_String();
         N = input.length;
         max_flow = 0;
@@ -142,7 +132,7 @@ public class Solution {
         //print(adj);
         //print(flow);
 
-        //dp[i][j][k] = max flow one can obtain by being at valve j with valves in k (bitmasked)
+        //dp[i][j][k] = max flow one can obtain by being at valve j with valves in k (bitmasked) remaining (and allowed) to open
         //  already open and with i minutes remaining
         dp = new int[31][N][1 << N];
         for(int i = 1; i < 31; ++i){
@@ -152,17 +142,21 @@ public class Solution {
         }
 
         int all_mask = (1 << N) - 1;
-        
-        System.out.println("Task 1: " + compute_flow(all_mask, 30));
+        endTime = System.nanoTime();
+        System.out.println("Setup Time: " + time_str());
+        startTime = System.nanoTime();
+        System.out.print("Task 1: " + compute_flow(all_mask, 30));
+        endTime = System.nanoTime();
+        System.out.println(" Time: " + time_str());
+        startTime = System.nanoTime();
         int mask_2_flow = 0;
 
         for(int person_mask = 0; person_mask < (1 << (N - 1)); ++person_mask){
-            if(person_mask % 1000 == 0){
-                System.out.println("Iter: " + person_mask);
-            }
             mask_2_flow = Math.max(mask_2_flow, compute_flow(person_mask, 26) + compute_flow(all_mask - person_mask, 26));
         }
-        System.out.println("Task 2: " + mask_2_flow);
+        endTime = System.nanoTime();
+
+        System.out.println("Task 2: " + mask_2_flow + " Time: " + time_str());
     }
     
 
@@ -173,6 +167,10 @@ public class Solution {
     public static int[] dir_card = {1, 0, -1, 0, 1};
     //same thing, 8 directions, for i in [0..7]
     public static int[] dir_all = {1, 0, -1, 0, 1, -1, -1, 1, 1};
+
+    public static String time_str(){
+        return String.format("%.3f", (double)(endTime - startTime) / (double)(1e9)) + " sec";
+    }
 
     //pad character c onto String S until it reaches target_len
     //pad on left if side == 0, right otherwise
