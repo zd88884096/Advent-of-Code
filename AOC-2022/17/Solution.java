@@ -14,9 +14,11 @@ public class Solution {
     //  So we compute the height increase and block # increase per cycle (recorded in top_changes and e_changes, respectively), 
     //  and use this to compute the final height
     public static int[][] t1 = {{0, 2}, {0, 3}, {0, 4}, {0, 5}}, t2 = {{0, 3}, {1, 2}, {1, 3}, {1, 4}, {2, 3}}, t3 = {{0, 2}, {0, 3}, {0, 4}, {1, 4}, {2, 4}}, t4 = {{0, 2}, {1, 2}, {2, 2}, {3, 2}}, t5 = {{0, 2}, {0, 3}, {1, 2}, {1, 3}};
+    //compress int coordinates to a single long
     public static long convert(int a, int b){
         return 7 * (long)a + b;
     }
+    //move elements in set vertically, up for "dir" distance
     public static HashSet<Long> move_ver(HashSet<Long> set, long dir){
         HashSet<Long> res = new HashSet<>();
         for(long ele : set){
@@ -24,6 +26,7 @@ public class Solution {
         }
         return res;
     }
+    //move elements in set horizontally, towards the right by one if c == '>', otherwise left by once
     public static HashSet<Long> move_hor(HashSet<Long> set, char c){
         HashSet<Long> res = new HashSet<>();
         int dir = c == '>' ? 1 : -1;
@@ -40,6 +43,8 @@ public class Solution {
         }
         return res;
     }
+    //true if m1 intersects with m2 (made sure m1 is smaller than m2 in my code in "main")
+    //  but could be easily optimized to make m1 smaller than m2 (just swap them, then swap back after finished, more efficient).
     public static boolean intersect(HashSet<Long> m1, HashSet<Long> m2){
         for(long ele : m1){
             if(m2.contains(ele)){
@@ -48,6 +53,7 @@ public class Solution {
         }
         return false;
     }
+    //max height of elements in a set
     public static long max_height(HashSet<Long> set){
         long max = 0L;
         for(long ele : set){
@@ -58,10 +64,9 @@ public class Solution {
     @SuppressWarnings("unchecked")
     public static void main(String[] args){
         long N = 100000L;
+        char[] wind = read_all_String()[0].toCharArray();
         //5 type of tetris block's coordinate compressed and stored in HashSet, with the bottom block at
         //  row 0, and the vertical position the same as how they appear each time
-        char[] wind = read_all_String()[0].toCharArray();
-        //System.out.println(wind.length);
         List<int[][]> shape = new ArrayList<>();
         shape.add(t1); shape.add(t2); shape.add(t3); shape.add(t4); shape.add(t5); 
         HashSet<Long>[] tetris = new HashSet[5];
@@ -85,9 +90,9 @@ public class Solution {
         //first_10000_top records the top in first 10000 iterations, useful later
         List<Long> top_changes = new ArrayList<>(), e_changes = new ArrayList<>(), first_10000_top = new ArrayList<>();
         for(long _e = 0; _e < N; ++_e){
-            //System.out.println("falling...");
-            //print(block);
+            //initialize the (_e % 5)-th type of block to initial height of top + 4
             HashSet<Long> block = move_ver(tetris[(int)(_e % 5)], top + 4);
+            //to detect whether we reached the start of "wind" again
             boolean cycled_back = false;
             while(true){
                 //simulate fall
@@ -115,14 +120,16 @@ public class Solution {
                     }
                     wind_ind = (wind_ind + 1) % wind.length;
                 }
-                //print(block);
             }
+
             rocks.addAll(block);
             //update top height by maxing the original top height and the top height of elements in current block
             //  when it stops falling
             top = Math.max(top, max_height(block));
+
             if(_e < 10000)
                 first_10000_top.add(top);
+
             //add the increase of top from each full cycle of wind to "top_changes" to observe cycle
             //add increase of blocks to "e_changes"
             if(cycled_back){
@@ -131,10 +138,11 @@ public class Solution {
                 e_changes.add(_e - old_e);
                 old_e = _e;
             }
+
+            //storing Part I's answer
             if(_e == 2021L){
                 ans1 = top;
             }
-            //System.out.println("top: " + top);
         }
         System.out.println("Task 1: " + ans1);
 
@@ -145,7 +153,7 @@ public class Solution {
         //for sample input, each cycle contains 5 elements
         //for real input, each cycle has 1 element only
         
-        //we also notice each cycle after the first deals with exactly 1755 blocks
+        //we also notice each cycle after the first deals with exactly 1755 blocks, causing the same increase of "top" (2768)
         
         //print(e_changes);
 
