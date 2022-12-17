@@ -3,90 +3,51 @@ import java.io.*;
 import java.lang.Math;
 
 public class Solution {
-    public static long[][][][][][] dp;
 
-    //Idea: simulate and record computed values with dp
-
-    //simulate player "turn"'s turn with two players at i (has i[0] and i[1]) with score j (with j[0] and j[1])
-    //  while computing how many times p win
-    public static long dfs(int[] i, int[] j, int p, int turn){
-        /*System.out.println("i:");
-        print(i);
-        System.out.println("j:");
-        print(j);*/
-
-        //since we only simulate one player's turn per call to dfs
-        //  at each call either j[0] or j[1] >= 21 but not both
-        //  We determine if p won by checking if j[p] >= 21
-        if(j[0] >= 21 || j[1] >= 21){
-            return j[p] >= 21 ? 1L : 0L;
-        }
-        //memoization step
-        if(dp[i[0]][i[1]][j[0]][j[1]][p][turn] >= 0){
-            return dp[i[0]][i[1]][j[0]][j[1]][p][turn];
-        }
-        long ans = 0L;
-        //iterate all possible scores
-        for(int r1 = 1; r1 <= 3; ++r1){
-            for(int r2 = 1; r2 <= 3; ++r2){
-                for(int r3 = 1; r3 <= 3; ++r3){
-                    int dice_sum = r1 + r2 + r3;
-                    int[] i_new = {i[0], i[1]};
-                    i_new[turn] = (i_new[turn] + dice_sum) % 10;
-                    int[] j_new = {j[0], j[1]};
-                    //need to add one to new score array since the range of points is 1-10, but we get 0-9 with % 10
-                    j_new[turn] = j_new[turn] + i_new[turn] + 1;
-                    // -1 * turn + 1 essentially reverses turn between 0 and 1
-                    ans += dfs(i_new, j_new, p, -1 * turn + 1);
-                }
-            }
-        }
-        //System.out.println();
-        dp[i[0]][i[1]][j[0]][j[1]][p][turn] = ans;
-        return ans;
-    }
     @SuppressWarnings("unchecked")
     public static void main(String[] args){
-        String[] input = read_all_String();
-        int[] cur = new int[2], score = new int[2];
-        int dice = 1, rolled = 0;
-        for(int i = 0; i < 2; ++i){
-            String[] toks = split(input[i], " ");
-            //falls in range 0-9..., easier to deal with when doing mod 10 later...
-            cur[i] = Integer.parseInt(toks[toks.length - 1]) - 1;
-        }
-
-        //dp[i1][i2][j1][j2][p][turn] = how many universes player p wins by being at position i1 with score j1 while opponent is at 
-        //  position i2 with score j2 and currently it's player "turn"'s turn
-        dp = new long[10][10][21][21][2][2];
-        for(int i1 = 0; i1 < 10; ++i1)
-            for(int i2 = 0; i2 < 10; ++i2)
-                for(int j1 = 0; j1 < 21; ++j1)
-                    for(int j2 = 0; j2 < 21; ++j2)
-                        for(int p = 0; p < 2; ++p)
-                            Arrays.fill(dp[i1][i2][j1][j2][p], -1L);
-
-        int[] i_arr_1 = {cur[0], cur[1]}, j_arr_1 = {0, 0}, i_arr_2 = {cur[0], cur[1]}, j_arr_2 = {0, 0};
-        long p1 = dfs(i_arr_1, j_arr_1, 0, 0), p2 = dfs(i_arr_2, j_arr_2, 1, 0);
-        System.out.println("Task 2: " + Math.max(p1, p2));
-        /*Part I
-        loop: while(true){
-            for(int i = 0; i < 2; ++i){
-                cur[i] += dice; dice = (dice + 1) % 100;
-                cur[i] += dice; dice = (dice + 1) % 100;
-                cur[i] += dice; dice = (dice + 1) % 100;
-                rolled += 3;
-                //falls in range 0-9...
-                cur[i] %= 10;
-                //need to add one to cur[i] since the range of points is 1-10...
-                score[i] += (cur[i] + 1);
-                if(score[i] >= 1000){
-                    System.out.println("Task 1: " + (score[-1 * i + 1] * rolled));
-                    break loop;
+        HashMap<Character, Long> map = new HashMap<>(), map2 = new HashMap<>();
+        HashMap<Character, Character> close = new HashMap<>();
+        map.put(')', 3L);
+        map.put(']', 57L);
+        map.put('}', 1197L);
+        map.put('>', 25137L);
+        map2.put(')', 1L);
+        map2.put(']', 2L);
+        map2.put('}', 3L);
+        map2.put('>', 4L);
+        close.put('(', ')');
+        close.put('[', ']');
+        close.put('{', '}');
+        close.put('<', '>');
+        long score = 0L;
+        List<Long> l = new ArrayList<>();
+        loop: for(String S : read_all_String()){
+            char[] s = S.toCharArray();
+            Stack<Character> stack = new Stack<>();
+            for(char c : s){
+                if(close.containsKey(c)){
+                    stack.add(c);
+                }
+                else if((!stack.isEmpty()) && close.get(stack.get(stack.size() - 1)) == c){
+                    stack.pop();
+                }
+                else{
+                    score += map.get(c);
+                    continue loop;
                 }
             }
-        }*/
-
+            long cur = 0L;
+            while(!stack.isEmpty()){
+                char top = stack.get(stack.size() - 1);
+                stack.pop();
+                cur = cur * 5 + map2.get(close.get(top));
+            }
+            l.add(cur);
+        }
+        Collections.sort(l);
+        System.out.println("Task 1: " + score);
+        System.out.println("Task 2: " + l.get(l.size() / 2));
     }
     
 
