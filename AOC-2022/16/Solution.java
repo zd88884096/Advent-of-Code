@@ -30,7 +30,8 @@ public class Solution {
                 continue;
             ans = Math.max(ans, dfs(time - d, i, mask - (1 << i)));
         }
-        //add the flow contributed by valve "cur" with "time" time remaining (as valve cur is opened at exactly "time" time remaining, flow[cur] * time will
+        //to compute dp[time][cur][mask], we can choose any vault left in mask to go to, while adding the flow contributed by vault cur, where we just opened
+        //  add the flow contributed by valve "cur" with "time" time remaining (as valve cur is opened at exactly "time" time remaining, flow[cur] * time will
         //  be all flow that cur contributes) 
         //  to max(dp[time - d][i][mask - (1 << i)] for some valid i 
         //  (being at i with time - d time left and remaining (mask - (1 << i)) allowed valves left to open))
@@ -115,7 +116,7 @@ public class Solution {
         //print(adj);
         //print(flow);
 
-        //dp[i][j][k] = max flow one can obtain by being at valve j with valves in k (bitmasked) remaining (and allowed) to open
+        //dp[i][j][k] = max flow one can obtain by being at valve j (just opened valve j) with valves in k (bitmasked) remaining (and allowed) to open
         //  already open and with i minutes remaining
         dp = new int[31][N][1 << N];
         for(int i = 1; i < 31; ++i){
