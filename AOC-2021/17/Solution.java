@@ -7,9 +7,6 @@ public class Solution {
     public static int top(int v){
         return (v + 1) * v / 2;
     }
-    public static int dist_after_sec(int v, int time){
-        return (v + (v - time + 1)) * time / 2;
-    }
     @SuppressWarnings("unchecked")
     public static void main(String[] args){
         //Idea: part I: observe that the trajectory of the point on x-axis is independent from that on y-axis
@@ -31,8 +28,7 @@ public class Solution {
 
         //for part I
         int[] arr = stoi(split(read_all_String()[0], "[targexy .:,=]"));
-        int max_y = -1 * arr[2] - 1;
-        System.out.println("Task 1: " + ((1 + max_y) * max_y / 2));
+        System.out.println("Task 1: " + top(-1 * arr[2] - 1));
 
         //for part II
         int ct = 0;
