@@ -7,6 +7,9 @@ public class Solution {
     public static long convert(long a, long b){
         return a * MAX + b;
     }
+    public static HashSet<Long> occupied;
+    public static Stack<Long> path;
+    public static int ct;
     @SuppressWarnings("unchecked")
     public static void main(String[] args){
         //idea: Simulate, add all rocks and all resting sand along the way to a HashSet "occupied"
@@ -36,10 +39,10 @@ public class Solution {
         //              Since only the end of P1 is occupied after S1 rests)
         //          Same for the case when S1 fell left down or right down.
 
-        int ct = 0;
+        ct = 0;
         //view rocks and occupied sand in the same way: as rocks
-        HashSet<Long> occupied = new HashSet<>();
-        Stack<Long> path = new Stack<>();
+        occupied = new HashSet<>();
+        path = new Stack<>();
         path.add(convert(500L, 0L));
         long max_y = 0L;
 
@@ -61,10 +64,10 @@ public class Solution {
         //  Part II - START and Part II - END
         //Part II - START
         //adding floor, observe that the leftmost the sand can get is 500 - floor_y, 10 is for safety
-        long floor_y = max_y + 2;
+        /*long floor_y = max_y + 2;
         for(long i = 500L - floor_y - 10; i <= 510L + floor_y + 10; ++i){
             occupied.add(convert(i, floor_y));
-        }
+        }*/
         //Part II - END
 
         //simulate sand falling
@@ -77,7 +80,9 @@ public class Solution {
             }
             long cur = path.get(path.size() - 1);
             path.pop();
-            while(true){
+            int i = 0;
+            //i = 3 means stuck
+            while(i != 3){
                 //try to go down one step
                 path.add(cur);
 
@@ -85,21 +90,14 @@ public class Solution {
                 if(cur % MAX >= LIM){
                     break loop;
                 }
-                //can go down
-                if(!occupied.contains(cur + 1)){
-                    cur += 1;
-                }
-                //can go left down
-                else if(!occupied.contains(cur - MAX + 1)){
-                    cur = cur - MAX + 1;
-                }
-                //can go right down
-                else if(!occupied.contains(cur + MAX + 1)){
-                    cur = cur + MAX + 1;
-                }
-                //reaches a rest
-                else{
-                    break;
+                //try to go down, left down, then right down, in order
+                long[] next = {cur + 1, cur - MAX + 1, cur + MAX + 1};
+                i = 0;
+                for(i = 0; i < 3; ++i){
+                    if(!occupied.contains(next[i])){
+                        cur = next[i];
+                        break;
+                    }
                 }
             }
             occupied.add(cur);

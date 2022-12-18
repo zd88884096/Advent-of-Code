@@ -52,7 +52,7 @@ public class Solution {
     public static long startTime, endTime;
     @SuppressWarnings("unchecked")
     public static void main(String[] args){
-        //adopted idea for optimization from Prof. Sotomayor
+        //adopted idea for optimization from Prof. Borja Sotomayor
         startTime = System.nanoTime();
         String[] input = read_all_String();
         N = input.length;
@@ -80,7 +80,7 @@ public class Solution {
         }
         //compute shortest distance between all pairs of points with Floyd Warshall
         //  and compress graph to only vertices with >0 flow (as we'll never open valves with 0 flow)
-        //  So we only use those to reach vertices with >0 flow (per Prof. Sotomayor's idea)
+        //  So we only use those to reach vertices with >0 flow (per Prof. Borja Sotomayor's idea)
         int[][] dist = new int[N][N];
         for(int i = 0; i < N; ++i)
             Arrays.fill(dist[i], 10000000);
