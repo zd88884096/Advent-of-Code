@@ -187,19 +187,25 @@ public class Solution {
         long T1 = 24, T2 = 32;
         long score = 0L;
         //Part I
+        time();
         for(String S : input){
             long res = solve(S, T1, true);
             score += res;
         }
         System.out.println("Task 1: " + score);
+        time();
+        print_time();
 
         //Part II
+        time();
         long score2 = 1L;
         for(int q = 0; q < Math.min(input.length, 3); ++q){
             long res = solve(input[q], T2, false);
             score2 *= res;
         }
         System.out.println("Task 2: " + score2);
+        time();
+        print_time();
     }
     
     //template
