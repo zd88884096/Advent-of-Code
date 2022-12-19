@@ -2,13 +2,70 @@ import java.util.*;
 import java.io.*;
 import java.lang.Math;
 
-public class Solution {
-    static HashMap<Long, Long> map;
+public class Solution { 
+    //MAIN IDEA: DP MEMOIZATION
+    //
+    //SETUP:
+    //  where each state of the dp includes info for time remaining + the # of robots of each type + # of minerals of each type, 
+    //  since each state of this type corresponds to EXACTLY ONE "max # of geodes one can get by starting from this state"
+    //  (this is because this state captures all the information at any point of following some excavation plan / path, i.e.
+    //  by knowing the information in this state, we can determine the max # of geodes we can get by starting fromt this state)
+    //
+    //INITIAL DFS CALL:
+    //  We can use a variable "max" to record the max # of geodes excavated in any state we iterated so far
+    //  and do a dfs starting from 24 (32 for part II) minutes remaining and 1 ore robot,
+    //  and no other robots or minerals, and whenever we reach a state with time = 0, 
+    //  we set "max" = max("max", # of geodes of this state), we also memoize all visited state in "visited"
+    //
+    //WHAT EACH DFS CALL DOES:
+    //  In each dfs call (this is equivalent to imagining we are at a certain state), 
+    //  we can choose to make some new robot or not any, and if we want to make a robot, we need to have
+    //  enough minerals. Making each type of robot (or not making any) leads to 
+    //  a different state, and these operations all happen within a minute (this sums up all that we can do in 1 minute), 
+    //  so we simulate and call dfs on each of those state (also reduce remaining time in each of them by 1).
+    //
+    //REMAINING ISSUE:
+    //However, this is too much to search exhaustively. (around 3 * 10^10, just an estimate, even with memoization, you are
+    //  looking at around 3 * 10^12 computations (assuming each dfs call takes 100 computations)
+    //  and 4(long in "visited") * 3 * 10^10 bytes of memory = 120 GB or RAM)
+    //  which could be optimized a bit through pruning
+    //
+    //OPTIMIZATION:
+    //I.  I did some pruning with the idea that: if we have t minutes remaining, and have g geodes excavated and r geode robots working,
+    //      the maximum number of geodes we can have in the end is g + r + (r + 1) ... + (r + t - 1)
+    //      since we can build at most 1 geode robot each minute, so the current minute we can get r geodes, next minute
+    //      we can get at most (r + 1), until the last minute where we can (r + t - 1), this equals g + t * (2 * r + t - 1) / 2
+    //  So if this value <= "max" (the max # of geodes we recorded so far), it's impossible for this state to ever
+    //      achieve the glory of "max" (as high as some previous plan / state we encountered), we just return the function immediately
+    //  This helped make the code run in around 3 minutes for Part II (however do mind that memory expense is still large,
+    //      around 800MB in my case, and I had to use ssh to CSIL computers to run it, shame on my PC).
+    //
+    //II. Also, in dfs, we try to call dfs on the state for creating geode robots first, then obsedian robot, then clay, then ore, then no new robots,
+    //  to try to greedily boost value of "max" in very early iterations so that part I works better (since we set a higher "max" early on).
+    //  Intuitively, greedily creating geode robots whenever possible is much better than most of the order of calling dfs (e.g. better than randomly creating
+    //      machines, since we might be slower in getting advanced machines and thus excavating fewer geodes)
+
+    //stores (state, maximum geode one can dig from this state)
+    static HashSet<Long> visited;
+
+    //cost[i][j] = # of j-th mineral required to build robot i
     static long[][] cost;
+
+    //robots[0..3] records # of ore, clay, obsedian, geode robots in each dfs call
+    //minerals[0..3] records # of ore, clay, obsedian, geode minerals in each dfs call
     static long[] robots, minerals;
+
+    //order of recursive dfs call in each dfs (by iterating this array, we try to create geode robots first, then obsedian, etc.)
     static int[] order = {3, 2, 1, 0};
-    static long max, iter;
+    static long max;
+
+    //used for encoding each state in a long
     public static long[] mult = {12L, 8L, 8L, 7L, 25L, 23L, 20L, 18L};
+
+    //compress the state with time, robots, minerals into a single long
+    //  to fit into the key range for "visited"
+    //Similar idea to compressing 2d coordinates of (x, y) into x * (max_y - min_y + 1) + y, so that
+    //  each (x, y) maps to a unique long (bijective map)
     public static long encode(long time){
         long res = 0L, m = 1L;
         int ind = mult.length - 1;
@@ -25,34 +82,30 @@ public class Solution {
         res += time * m;
         return res;
     }
-    public static long dfs(long time){
-        ++iter;
-        if(iter % 1000000 == 0L){
-            System.out.println("iter: " + iter + " max: " + max);
-        }
-        long lim = 40;
-        if(time == lim){
-            print(robots);
-            print(minerals);
-            System.out.println();
-        }
+
+    //dfs function
+    public static void dfs(long time){
         long state = encode(time);
-        if(map.containsKey(state)){
-            return map.get(state);
+
+        //memoization and pruning
+        if(visited.contains(state) || max >= minerals[3] + (time * (robots[3] * 2 + time - 1) / 2)){
+            return ;
         }
+        //reached the end of our excavation plan (no time remaining)
         if(time == 0){
-            //map.put(state, minerals[3]);
             max = Math.max(max, minerals[3]);
-            return minerals[3];
+            return ;
         }
+        visited.add(state);
+
+        //candidate_new_robo[i] is true iff we have enough minerals to make robot[i] at this state
         boolean[] candidate_new_robo = new boolean[4];
+
+        //return value
         long m2 = 0L;
-        //pruning
-        if(max - minerals[3] >= (time * (robots[3] * 2 + time - 1) / 2)){
-            return max;
-        }
+
         //check which robots we can add
-        loop: for(int r = 3; r >= 0; --r){
+        loop: for(int r = 0; r < 4; ++r){
             //check if enough mineral
             for(int i = 0; i < 4; ++i){
                 if(minerals[i] < cost[r][i]){
@@ -60,48 +113,69 @@ public class Solution {
                     continue loop;
                 }
             }
-            if(time == lim)
-                System.out.println("robo: " + r);
             candidate_new_robo[r] = true;
         }
 
-        if(time == lim)
-            System.out.println("check 1:");
-        //no new robots
+        //setup for backtracking
         for(int i = 0; i < 4; ++i){
             minerals[i] += robots[i];
         }
-        //prioritize adding robot, and adding more advanced robot
+
+        //prioritize adding robot, and adding more advanced robot first
         for(int r : order){
-            if(time == lim)
-                print(candidate_new_robo);
             if(candidate_new_robo[r]){
-                if(time == lim)
-                    System.out.println("check 3:");
                 for(int i = 0; i < 4; ++i){
                     minerals[i] -= cost[r][i];
                 }
                 robots[r]++;
-                if(time == lim){
-                    System.out.println("in: " + r);
-                }
-                m2 = Math.max(m2, dfs(time - 1));
+                dfs(time - 1);
                 for(int i = 0; i < 4; ++i){
                     minerals[i] += cost[r][i];
                 }
                 robots[r]--;
             }
         }
-        m2 = Math.max(m2, dfs(time - 1));
-        if(time == lim)
-            System.out.println("check 2:");
-        //some new robot
+
+        //dfs call foradding no robot
+        dfs(time - 1);
+
         //reset for backtracking
         for(int i = 0; i < 4; ++i){
             minerals[i] -= robots[i];
         }
-        map.put(state, m2);
-        return m2;
+    }
+
+    public static long solve(String S, long T, boolean count_id){
+        //reset everything we use in the dfs
+        //  those arrays are only allocated once to save memory
+        //  and avoid too much cost in memory allocation
+        for(int i = 0; i < 4; ++i){
+            Arrays.fill(cost[i], 0L);
+        }
+        Arrays.fill(robots, 0L);
+        Arrays.fill(minerals, 0L);
+        robots[0] = 1L;
+        visited = new HashSet<>();
+        max = 0L;
+
+        String[] toks = split(S, "[Blueprint :.adobygEchs]");
+        long[] arr = stol(toks);
+        long id = arr[0];
+
+        //fill in mineral cost for creating each robot
+        cost[0][0] = arr[1];
+        cost[1][0] = arr[2];
+        cost[2][0] = arr[3];
+        cost[2][1] = arr[4];
+        cost[3][0] = arr[5];
+        cost[3][2] = arr[6];
+
+        //dfs to compute max value
+        dfs(T);
+        System.out.println("id: " + id + " max: " + max);
+
+        //count_id is true for Part I, false for Part II
+        return count_id ? id * max : max;
     }
     @SuppressWarnings("unchecked")
     public static void main(String[] args){
@@ -112,62 +186,22 @@ public class Solution {
         max = 0L;
         long T1 = 24, T2 = 32;
         long score = 0L;
-        /*for(String S : input){
-            for(int i = 0; i < 4; ++i){
-                Arrays.fill(cost[i], 0L);
-            }
-            Arrays.fill(robots, 0L);
-            Arrays.fill(minerals, 0L);
-            robots[0] = 1L;
-            map = new HashMap<>();
-            max = 0L;
-            iter = 0L;
-
-            String[] toks = split(S, "[Blueprint :.adobygEchs]");
-            //print(toks);
-            long[] arr = stol(toks);
-            long id = arr[0];
-            cost[0][0] = arr[1];
-            cost[1][0] = arr[2];
-            cost[2][0] = arr[3];
-            cost[2][1] = arr[4];
-            cost[3][0] = arr[5];
-            cost[3][2] = arr[6];
-            //print(cost);
-            dfs(T1);
-            score += id * max;
-            System.out.println(max);
+        //Part I
+        for(String S : input){
+            long res = solve(S, T1, true);
+            score += res;
         }
-        System.out.println("Task 1: " + score);*/
+        System.out.println("Task 1: " + score);
+
+        //Part II
         long score2 = 1L;
         for(int q = 0; q < Math.min(input.length, 3); ++q){
-            String S = input[q];
-            for(int i = 0; i < 4; ++i){
-                Arrays.fill(cost[i], 0L);
-            }
-            Arrays.fill(robots, 0L);
-            Arrays.fill(minerals, 0L);
-            robots[0] = 1L;
-            map = new HashMap<>();
-            max = 0L;
-            iter = 0L;
-
-            String[] toks = split(S, "[Blueprint :.adobygEchs]");
-            //print(toks);
-            long[] arr = stol(toks);
-            long id = arr[0];
-            cost[0][0] = arr[1];
-            cost[1][0] = arr[2];
-            cost[2][0] = arr[3];
-            cost[2][1] = arr[4];
-            cost[3][0] = arr[5];
-            cost[3][2] = arr[6];
-            dfs(T2);
-            score2 *= max;
-            System.out.println(max);
+            long res = solve(input[q], T2, false);
+            score2 *= res;
         }
         System.out.println("Task 2: " + score2);
     }
+    
     //template
     public static Scanner sc;
     //(x + dir_card[i], y + dir_card[i + 1]) are 4 cardinal directions (for i in [0..3])
