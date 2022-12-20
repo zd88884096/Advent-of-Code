@@ -76,9 +76,9 @@ public class Solution {
         //record Nodes in the original order
         List<Node> l = new ArrayList<>();
 
-        //node with 0 value, stored for computing final answer
-
         //initialize
+
+        //node with 0 value, stored for computing final answer
         Node zero_node = new Node(0L);
         for(int i = 0; i < N; ++i){
             String S = input[i];
