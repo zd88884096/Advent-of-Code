@@ -24,6 +24,8 @@ public class Solution {
     
     //I also had to divide each newly created value (Pair<long[], long[]>) by the GCD of all their coefficients to prevent long overflow.
     //  (For example, I reduced {3, 3, 6}, {3, 3} ((3x^2 + 3x + 6) / (3x + 3)) to {1, 1, 2}, {1, 1}, since 3 is the gcd of all coefficients)
+    //  (Note we don't need this process again for the 2 operands used when computing a new value, since when those 2 were created, they already went
+    //      through this process once)
 
     //I just computed the values for Part II in the same way as Part I, but now doing operations on Pair<long[], long[]>. In the end, at root we end up
     //  with equations a / b = c / d, this is equivalent to ad - bc = 0. The solution to this equation must be a divisor of the constant term of the equation.
