@@ -185,6 +185,8 @@ public class Solution {
             for(String next : forw.get(cur)){
                 Triple<String, String, String> trip = prev.get(next);
                 if(res.containsKey(trip.a) && res.containsKey(trip.c)){
+                    //breaks when we encounter "root" (means both operands for "root" have been computed)
+                    //This only happens when "part1" is set to false.
                     if(trip.b.equals("=")){
                         break;
                     }
