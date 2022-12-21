@@ -135,9 +135,9 @@ public class Solution {
 
     @SuppressWarnings("unchecked")
     public static void main(String[] args){
-        //To Switch to Part II, just set this boolean to true
+        //To Switch to Part I, just set this boolean to true
         boolean part1 = false;
-        
+
         res = new HashMap<>();
         prev = new HashMap<>();
         forw = new HashMap<>();
