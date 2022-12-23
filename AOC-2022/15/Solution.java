@@ -66,7 +66,6 @@ public class Solution {
             System.out.println();
         }
     }
-    public static final long MAX = (long)(1e7);
     public static long convert(long a, long b){
         return a * MAX + b;
     }
@@ -87,7 +86,7 @@ public class Solution {
         //      As Seg Tree[x] only has value 1 or 0. So we keep count to record how many intervals x are actually in.
         //      So that when it gets out of an interval, we do count[x]--, and check if count[x] == 0, and only then do we set Seg Tree[x] to 0
         //  Same thing for count, for each y-coordinate for each interval, only the values of 2 elements on the boundary needs to have their value changed in count
-        
+        time();
         String[] input_str = read_all_String();
         int N = input_str.length;
         long task1_y = 2000000, task2_y = 4000000;
@@ -238,17 +237,29 @@ public class Solution {
         }
         System.out.println("Task 1: " + specific);
         System.out.println("Task 2: " + task2_ans_x + " " + task2_ans_y + " " + (task2_ans_x * 4000000 + task2_ans_y));
-
+        time();
+        print_time();
     }
     
 
     //template
     public static Scanner sc;
-    static long MOD = 1000000007L;
     //(x + dir_card[i], y + dir_card[i + 1]) are 4 cardinal directions (for i in [0..3])
     public static int[] dir_card = {1, 0, -1, 0, 1};
     //same thing, 8 directions, for i in [0..7]
     public static int[] dir_all = {1, 0, -1, 0, 1, -1, -1, 1, 1};
+
+    public static long MAX = (long)(1e7 + 0.1), MOD = 1000000007L,  _timer_ind = 0L;
+    public static long[] _timer = new long[2];
+    public static void time(){
+        _timer[(int)_timer_ind] = System.nanoTime();
+        _timer_ind = _timer_ind * -1 + 1;
+    }
+
+    //print timer result in the form of a formmated String
+    public static void print_time(){
+        System.out.println("Time: " + String.format("%.3f", (double)(_timer[1] - _timer[0]) / (double)(1e9)) + " sec");
+    }
 
     //pad character c onto String S until it reaches target_len
     //pad on left if side == 0, right otherwise
