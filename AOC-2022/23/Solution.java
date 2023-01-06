@@ -30,7 +30,7 @@ public class Solution {
                 }
             }
         }
-
+        System.out.println(set);
         //epoch is just an upper bound of iterations to get the desired answer
         //dir_ind is between [0..3], act as the starting index of "dirs" to start checking in each round
         //  In round 1, dir_ind is 0, so we would check where to move each Elf in the order N, S, W, E.

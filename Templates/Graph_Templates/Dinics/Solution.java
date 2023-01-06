@@ -1,4 +1,3 @@
-
 import java.util.*;
 import java.io.*;
 import java.lang.Math;
@@ -39,7 +38,10 @@ public class Solution {
   	static final long INF = Long.MAX_VALUE / 2;
   	int n, s, t;
   	public long maxFlow;
+    //graph in adj list form
   	public List<Edge>[] graph;
+    //used to record weight of each edge
+    public HashMap<Integer, Long>[] edge_set;
   	private int[] level, next;
 
   	public Dinics(int n, int s, int t){
@@ -49,8 +51,10 @@ public class Solution {
   		level = new int[n];
   		next = new int[n];
   		graph = new ArrayList[n];
+      edge_set = new HashMap[n];
   		for(int i = 0; i < n; ++i){
   			graph[i] = new ArrayList<Edge>();
+        edge_set[i] = new HashMap<>();
   		}
   	}
 
@@ -61,6 +65,7 @@ public class Solution {
   		er.residual = e;
   		graph[from].add(e);
   		graph[to].add(er);
+      edge_set[from].put(to, capacity);
   	}
 
   	private boolean bfs(){
@@ -110,6 +115,15 @@ public class Solution {
   			}
   		}
   	}
+  }
+  public static String read(){
+    try{
+        return sc.readLine();
+    }
+    catch(IOException e){
+        e.printStackTrace();
+        return "";
+    }
   }
   public static String[] read_toks(){
         return read().split(" ");
